@@ -1,5 +1,8 @@
-# get information of chessboard
-# used in move/piece selector
+# -------------------------------------------------------+
+# get information of chessboard                          |
+# used to extract information in reinforcement learning  |
+# -------------------------------------------------------+
+
 from moveGeneration import *
 from validation import *
 import numpy as np
@@ -22,7 +25,8 @@ def fen_reader(fen):
     for x in range(4):
         move[x] = int(fen[102 + x])
     piece_type = fen[107]
-    return chessboard, player, move, piece_type
+    winner = fen[109]
+    return chessboard, player, move, piece_type, winner
 
 
 def flip(chessboard, player, move, piece_type):
@@ -101,16 +105,22 @@ def label_valid_moves_tile(chessboard, tile):
         newboard[move[2]][move[3]] = 2
     return np.reshape(newboard, 90)
 
-
-def label_chosen_piece(move):
+# label reward for 
+def label_chosen_piece(move, player, winner):
     newboard = np.zeros((10, 9), dtype=np.int8)
-    newboard[move[0]][move[1]] = 1
+    if player == winner:
+        newboard[move[0]][move[1]] = 1
+    else:
+        newboard[move[0]][move[1]] = -1
     return np.reshape(newboard, 90)
 
 
-def label_chosen_dest(move):
+def label_chosen_dest(move, player, winner):
     newboard = np.zeros((10, 9), dtype=np.int8)
-    newboard[move[2]][move[3]] = 1
+    if player == winner:
+        newboard[move[2]][move[3]] = 1
+    else:
+        newboard[move[2]][move[3]] = -1
     return np.reshape(newboard, 90)
 
 
@@ -134,7 +144,7 @@ def count_defend(board, player, tile):
 
 
 def extract_features_piece(fen):
-    _chessboard, _player, _move, _piece_type = fen_reader(fen)
+    _chessboard, _player, _move, _piece_type, _winner = fen_reader(fen)
     _chessboard, _move, _piece_type = flip(_chessboard, _player, _move, _piece_type)
 
     side_label = label_board_side(_chessboard)
@@ -146,7 +156,7 @@ def extract_features_piece(fen):
 
     # liberties_label = label_liberties(_chessboard)
     # atkdfd_label = label_attack_defend(_chessboard)
-    chosen_piece_label = label_chosen_piece(_move)
+    chosen_piece_label = label_chosen_piece(_move, _player, _winner)
 
     chnl_option = {0: side_label, 1: type_label[0], 2: type_label[1], 3: type_label[2], 4: type_label[3],
                    5: type_label[4], 6: type_label[5], 7: type_label[6]}
@@ -166,7 +176,7 @@ def extract_features_piece(fen):
 
 
 def extract_features_dest(fen):
-    _chessboard, _player, _move, _piece_type = fen_reader(fen)
+    _chessboard, _player, _move, _piece_type, _winner = fen_reader(fen)
     # print "flip"
     _chessboard, _move, _piece_type = flip(_chessboard, _player, _move, _piece_type)
 
@@ -178,7 +188,7 @@ def extract_features_dest(fen):
 
     # liberties_label = label_liberties(_chessboard)
     # atkdfd_label = label_attack_defend(_chessboard)
-    chosen_dest_label = label_chosen_dest(_move)
+    chosen_dest_label = label_chosen_dest(_move, _player, _winner)
     validmoves_label = label_valid_moves_tile(_chessboard, _move[:2])
 
     chnl_option = {0: side_label, 1: type_label[0], 2: type_label[1], 3: type_label[2], 4: type_label[3],
@@ -224,7 +234,9 @@ def extract_features_predict(fen):
     output += '\n'
     return output
 
-#
+# ---------------------------------------+
+# extract information for move selector  |
+# ---------------------------------------+
 # path = '../test_move/'
 # dt = ["" for x in range(7)]
 # for x in range(7):
@@ -247,6 +259,34 @@ def extract_features_predict(fen):
 #     dt[x].close()
 #
 
+# ---------------------------------------+
+# extract information for piece selector |
+# ---------------------------------------+
+path = '../test/'
+dt = open("dataset_piece.txt", 'a+')
+count = 0
+for filename in os.listdir(path):
+    if filename[0] == '.':
+        continue
+    pgn = open(path + filename, 'r')
+    output = ""
+    for line in pgn:
+        count+=1
+        if count%1000 == 0:
+            print count
+        # line = line.decode("utf-8")
+        # print line
+        try:
+            output = extract_features_piece(line)
+            dt.write(output)
+        except:
+            print 'error! ' + line
+    pgn.close()
+dt.close()
+
+# ------------------------------------------+
+# used to extract information in prediction |
+# ------------------------------------------+
 # path = '../train/'
 # dt = open("dataset_piece_predict", 'a+')
 # count = 0
@@ -262,27 +302,6 @@ def extract_features_predict(fen):
 #         # print line
 #         try:
 #             output = extract_features_predict(line)
-#             dt.write(output)
-#         except:
-#             print 'error! ' + line
-#     pgn.close()
-# dt.close()
-
-# path = '../test/'
-# dt = open("dataset_piece", 'a+')
-# count = 0
-# for filename in os.listdir(path):
-#     if filename[0] == '.':
-#         continue
-#     pgn = open(path + filename, 'r')
-#     for line in pgn:
-#         count+=1
-#         if count%1000 == 0:
-#             print count
-#         # line = line.decode("utf-8")
-#         # print line
-#         try:
-#             output = extract_features_piece(line)
 #             dt.write(output)
 #         except:
 #             print 'error! ' + line
