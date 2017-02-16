@@ -1,4 +1,8 @@
-# get information of chessboard
+# -------------------------------------------------------+
+# get information of chessboard                          |
+# used to extract information in prediction              |
+# -------------------------------------------------------+
+
 from moveGeneration import *
 from validation import *
 import numpy as np
