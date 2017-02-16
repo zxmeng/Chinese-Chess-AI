@@ -1,0 +1,5 @@
+A Chinese Chess Game.
+Currently, the game is only a digital version of a chinese chess board game, so 2 human players can play together on a touch device.
+
+The game is written in javascript, utilizing cocos2d-html5 engine; therefore it can be built to run on any browser or iOS and Android.
+Demo: http://leenmie.github.io/chinese-chess/
