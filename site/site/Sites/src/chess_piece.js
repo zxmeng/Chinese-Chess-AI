@@ -280,7 +280,9 @@ var PieceLayer = cc.Layer.extend({
 		}
 		fen += "b";
 		var socket=io.connect()
-		socket.emit("chat",fen)
+		var session=getUrlParam()
+		console.log(session)
+		socket.emit("chat",fen+","+session)
 		//socket.emit('forceDisconnect');
 		//socket.disconnect()
 		// function sleep(milliseconds) {
@@ -294,14 +296,20 @@ var PieceLayer = cc.Layer.extend({
 		_this=this;
 		console.log(fen);
 		string = ''
+		var a=1;
+		test1:
 		socket.on('chat1',function (data) {
 			console.log(data);
-			if(data.length==4){
-				string=data;
+			temp=data.split(',');
+			if(data[0].length==4 && data[1]==session){
+				string=data[1];
 				console.log(string);
+				a=0;
 			}
-
-
+			else{
+				continue test1;
+			}
+		};
 		// waiting for socket message
 		row = 9-parseInt(string[0]);
 		col = parseInt(string[1]);
@@ -321,7 +329,6 @@ var PieceLayer = cc.Layer.extend({
 				var sid = cc.audioEngine.playEffect(res.ChessPick_mp3);
 				cc.director.getScheduler().scheduleCallbackForTarget(_this, function() {cc.audioEngine.stopEffect(sid);}, 1, 0, 0, false);
 			}
-		}
 
 		//move a piece
 		var row=9-parseInt(string[2]);
