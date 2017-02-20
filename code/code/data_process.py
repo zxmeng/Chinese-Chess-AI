@@ -22,35 +22,35 @@ from update_move import *
 # get the game results and assign rewards accordingly     |
 # save the processed data to folder processed             |
 # --------------------------------------------------------+
-# path = '../source/'
-# dt = open("../processed/processed.txt", 'w')
-# count = 0
-# for filename in os.listdir(path):
-# 	if filename[0] == '.':
-# 		continue
-# 	pgn = open(path + filename, 'r')
-# 	output = ""
-# 	for line in pgn:
-# 		count+=1
-# 		if count%1000 == 0:
-# 			print count
-# 		# line = line.decode("utf-8")
-# 		# print line
-# 		if "Game" in line:
-# 			continue
-# 		elif "wins" in line:
-# 			winner = line[0]
-# 			print winner
-# 			output = output.replace("\n", "," + winner + "\n")
-# 			dt.write(output)
-# 			output = ""
-# 			continue
-# 		else:
-# 			output += line
+path = '../source/'
+dt = open("../processed/processed.txt", 'w')
+count = 0
+for filename in os.listdir(path):
+	if filename[0] == '.':
+		continue
+	pgn = open(path + filename, 'r')
+	output = ""
+	for line in pgn:
+		count+=1
+		if count%1000 == 0:
+			print count
+		# line = line.decode("utf-8")
+		# print line
+		if "Game" in line:
+			continue
+		elif "wins" in line:
+			winner = line[0]
+			print winner
+			output = output.replace("\n", "," + winner + "\n")
+			dt.write(output)
+			output = ""
+			continue
+		else:
+			output += line
 
-# 	pgn.close()
-# dt.close()
-# print count
+	pgn.close()
+dt.close()
+print count
 
 
 # --------------------------------------------------------------------+
@@ -59,14 +59,14 @@ from update_move import *
 # then for different move selectors                                   |
 # save the extracted info to folder update_xxx                        |
 # --------------------------------------------------------------------+
-# info_ext_piece()
-# info_ext_move()
+info_ext_piece()
+info_ext_move()
 
 
 # --------------------------------------------------+
 # call update functions to train the old models     |
 # --------------------------------------------------+
-# update_piece_selector()
+update_piece_selector()
 update_move_selector("r")
 update_move_selector("c")
 update_move_selector("b")
