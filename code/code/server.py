@@ -49,8 +49,10 @@ def on_a_response(*args):
 
     f.write(time.strftime("%Y-%m-%d %H:%M:%S,", time.localtime()))
     # print args
-    fen = args[0]
-    f.write(args[0])
+    temp = args[0]
+    message = temp.split(",")
+    fen = message[0]
+    f.write(fen)
     f.write(",")
     newboard = [[0 for x in range(9)] for y in range(10)]
     for i in xrange(0,10):
@@ -120,9 +122,9 @@ def on_a_response(*args):
     else:
         fen1+="r"
     # print fen1
-
+    print message[1]
     # return fen1,None
-    socketIO.emit('chat1',string)
+    socketIO.emit('chat1',string+","+message[1])
     f.write(string)
     f.write("\n")
 

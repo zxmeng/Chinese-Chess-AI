@@ -22,6 +22,29 @@
 <body style="padding:0; margin: 0; background: #000;">
 <canvas id="gameCanvas" width="800" height="450"></canvas>
 <script src="/socket.io/socket.io.js"></script>
+<script>
+    function getUrlParam()
+    {
+      var reg = new RegExp("(^|&)"+ "session" +"=([^&]*)(&|$)"); 
+      var r = window.location.search.substr(1).match(reg);
+      if (r!=null) return unescape(r[2]); return null;
+    } 
+
+    //playlist.push("M7lc1UVf-VE");
+    console.log(getUrlParam());
+    if(getUrlParam()==null)
+    {
+      console.log("test");
+      dateObj=new Date();
+      var session=dateObj.getTime();
+      window.location.href=window.location+"?session=" +session;
+//      location.replace(window.location.href);
+    }
+    else
+    {
+      var session=getUrlParam();
+    }
+</script>
 <script src="frameworks/cocos2d-html5/CCBoot.js"></script>
 <script src="main.js"></script>
 
