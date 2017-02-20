@@ -1,14 +1,48 @@
+# origin version of chess, the move will be record by 
+# the text file in the argument 
+
 import random
 import copy
-import tensorflow as tf
 import os
 import numpy as np
-# from socketIO_client import SocketIO
 import time
 from piece_selector import *
 from move_selector import *
 from check import *
 
+import sys
+sys.path.insert(0,'chess2p')
+import chess2p as game2p
+
+os.environ['TF_CPP_MIN_VLOG_LEVEL']='3'
+
+# the default path is in "qipu"
+
+f=open("../qipu/"+sys.argv[1],"a+")
+
+#for piece selector inorder not to select an empty block
+def process1(prediction,fen):
+    prediction[prediction<0.001] = 0.0
+    # prediction = np.power(prediction, 2)
+    total = np.sum(prediction)
+    prediction = prediction / total
+
+    rand = np.random.uniform(0,1)
+
+    # temp = np.amax(prediction)
+    temp = 0
+    for i in range(10):
+        for j in range(9):
+            temp += prediction[i][j]
+            temp_r, temp_c = flip(fen, i, j)
+            if (temp >= rand) and (fen[temp_r*10+temp_c]!='1'):
+                return i, j
+
+    temp = np.amax(prediction)
+    for i in range(10):
+        for j in range(9):
+            if (temp == prediction[i][j]):
+                return i, j
 
 def process(prediction):
     prediction[prediction<0.001] = 0.0
@@ -23,7 +57,7 @@ def process(prediction):
     for i in range(10):
         for j in range(9):
             temp += prediction[i][j]
-            if temp > rand:
+            if (temp > rand):
                 return i, j
 
 
@@ -36,7 +70,7 @@ def printstat(prediction):
         # print temp[i]
 
 
-def flip(fen, x,y):
+def flip(fen, x, y):
     if fen[100] =='b':
         x = 9 - x
         y = 8 - y
@@ -46,6 +80,8 @@ def flip(fen, x,y):
 def on_a_response(*args):
     # print args
     fen = args[0]
+    f.write(args[0])
+    f.write(",")
     newboard = [[0 for x in range(9)] for y in range(10)]
     for i in xrange(0,10):
             for j in xrange(0,9):
@@ -56,7 +92,11 @@ def on_a_response(*args):
         opp="r"
     checkflag,tempmove=check(newboard,opp)
     if(checkflag==1):
-        print tempmove
+        string = ''
+        for x in xrange(0,4):
+            string = string + str(tempmove[x])
+        f.write(string+","+ fen[tempmove[0]*10+tempmove[1]] +"\n")
+        # print tempmove
         return None, fen[100]
     temp = np.zeros((3),dtype=np.float32)
     temp_m = 0.0
@@ -65,7 +105,7 @@ def on_a_response(*args):
     # printstat(prediction)
     # process prediction
     for i in range(1):
-        move[i][0], move[i][1] = process(prediction)
+        move[i][0], move[i][1] = process1(prediction,fen)
         move[i][0], move[i][1] = flip(fen, move[i][0], move[i][1])
         # print move[i][0], move[i][1]
 
@@ -94,6 +134,8 @@ def on_a_response(*args):
         string = string + str(move[j][x])
     # print string
 
+    f.write(string+","+fen[move[0][0]*10+move[0][1]]+"\n")
+
     newboard[int(string[2])][int(string[3])]=newboard[int(string[0])][int(string[1])]
     newboard[int(string[0])][int(string[1])]='1';
 
@@ -112,39 +154,65 @@ def on_a_response(*args):
 
     return fen1,None
     # socketIO.emit('chat1',string)
+    
 
 move = np.zeros((3, 4), dtype=np.int)
+
+
 fen = "rnbakabnr/111111111/1c11111c1/p1p1p1p1p/111111111/111111111/P1P1P1P1P/1C11111C1/111111111/RNBAKABNR/r"
 # fen = "111a1ab11/11R111111/111k11111/p11Nn111p/111111111/111111111/111C1111c/111111R11/111111111/11BAKAB11,b"
 # fen = "11bakab11/111111111/11R111111/C111c1111/111111111/111111111/P111Nn11P/11111K111/111111r11/11BA1A111,r"
-print fen
+#print fen
 # on_a_response(fen)
-for i in xrange(1,100):
-    fen, win = on_a_response(fen)
-    print win
-    if(win == "r"):
-        print "r"
-        print i
-        break
-    elif(win == "b"):
-        print "b"
-        print i
-        break
-    print fen
-    pass
 
-# socket.gethostbyaddr('localhost:3000')
-# import socket
-move = np.zeros((3, 4), dtype=np.int)
-# host = 'localhost'
-# port = 3000
-# socketIO = SocketIO('localhost', port)
-# # socketIO.on('chat',on_a_response)
-# # socketIO.wait(seconds=10)
+# the part is for self training
 
-# #chat_namespace = socketIO.define(AA, '/chat')
-# while True:
-#     socketIO.on('chat',on_a_response)
-#     socketIO.wait(seconds=5)
-
+# for x in xrange(1,500):
+#     print x
+#     f.write("Game "+str(x)+"\n")
+#     for i in xrange(1,1000):
+#         fen, win = on_a_response(fen)
+#         # print win
+#         if(win == "r"):
+#             f.write("r wins\n")
+#             # print "r"
+#             print i
+#             break
+#         elif(win == "b"):
+#             f.write("b wins\n")
+#             # print "b"
+#             print i
+#             break
+#         # print fen
+#         pass
+#     fen = "rnbakabnr/111111111/1c11111c1/p1p1p1p1p/111111111/111111111/P1P1P1P1P/1C11111C1/111111111/RNBAKABNR/r"
 #     pass
+
+
+# end of part
+
+# training with 2p
+
+for x in xrange(1,500):
+    print x
+    f.write("Game "+str(x)+"\n")
+    for i in xrange(1,1000):
+        if(i%2==1):
+            fen, win = on_a_response(fen)
+        else:
+            fen, win = game2p.on_a_response(fen)
+        # print win
+        if(win == "r"):
+            f.write("r wins\n")
+            # print "r"
+            print i
+            break
+        elif(win == "b"):
+            f.write("b wins\n")
+            # print "b"
+            print i
+            break
+        # print fen
+        pass
+    fen = "rnbakabnr/111111111/1c11111c1/p1p1p1p1p/111111111/111111111/P1P1P1P1P/1C11111C1/111111111/RNBAKABNR/r"
+    pass
