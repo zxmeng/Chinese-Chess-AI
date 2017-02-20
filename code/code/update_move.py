@@ -1,6 +1,14 @@
+# -------------------------------------------------------------+
+# Ver 1.0    Feb 16 2017                                       |
+# Author: zxm                                                  |
+# Summary: to train existing move selector by reinforcement    |
+#          using processed source data                         |
+# -------------------------------------------------------------+
+
+
 import tensorflow as tf
 import numpy as np
-from information import *
+import os
 
 
 def weight_varible(shape):
@@ -72,33 +80,41 @@ def update_move_selector(piece_type):
     # create model saver
     saver = tf.train.Saver()
 
-    path = '../update/'
+    path = '../update_move_' + piece_type + '/'
     model_path = '../model/'
 
-    # should be open the real-time game results file with rewards
-    for filename in os.listdir(path):
-        if filename[0] == '.':
-            continue
-        pgn = open(path + filename, 'r')
-        batch = 1000
-        feature = np.zeros((batch/2, 810))
-        result = np.zeros((batch/2, 90))
-        count = 0
-        for line in pgn:
-            if count%2 == 0:
-                feature[(count%batch)/2] = line[0:-2].split(',')
-            else:
-                result[(count%batch)/2] = line[0:-2].split(',')
-            count += 1
-        
-        with sess.as_default():
-            # resotre previously saved model
-            saver.restore(sess, '../model/my-model-' + piece_type)
-            # reinforcement training
-            train_step.run(feed_dict = {x: feature, y_: result})
-            # save updated model
-            saver.save(sess, '../model/my-model-' + piece_type)
-            train_accuacy = accuracy.eval(feed_dict={x: feature, y_: result})
-            print("testing accuracy %g"%(train_accuacy))
-            
+    with sess.as_default():
+        # resotre previously saved model
+        saver.restore(sess, '../model/my-model-' + piece_type)
+
+        # should be open the real-time game results file with rewards
+        for filename in os.listdir(path):
+            if filename[0] == '.':
+                continue
+            pgn = open(path + filename, 'r')
+
+            batch = 1000
+            feature = np.zeros((batch/2, 810))
+            reward = np.zeros((batch/2, 90))
+            count = 0
+            for line in pgn:
+                if count%2 == 0:
+                    feature[(count%batch)/2] = line[0:-2].split(',')
+                else:
+                    reward[(count%batch)/2] = line[0:-2].split(',')
+
+                if count != 0 and count%batch == batch - 1:
+                    # reinforcement training
+                    train_step.run(feed_dict = {x: feature, y_: reward})
+                    feature = np.zeros((batch/2, 810))
+                    reward = np.zeros((batch/2, 90))
+
+                count += 1
+
+        if count != 0 and count%batch != batch - 1:
+            train_step.run(feed_dict = {x: feature[:(count%batch)/2,:], y_: reward[:(count%batch)/2,:]})
+
+        # save updated model
+        saver.save(sess, '../model/my-model-' + piece_type + "-updated")
+        print count
 

@@ -3,6 +3,13 @@
 # used to extract information in reinforcement learning  |
 # -------------------------------------------------------+
 
+# -------------------------------------------------------------+
+# Ver 1.0    Feb 16 2017                                       |
+# Based on information.py                                      |
+# Author: zxm                                                  |
+# Summary: add function info_ext_move() and info_ext_piece()   |
+# -------------------------------------------------------------+
+
 from moveGeneration import *
 from validation import *
 import numpy as np
@@ -237,52 +244,61 @@ def extract_features_predict(fen):
 # ---------------------------------------+
 # extract information for move selector  |
 # ---------------------------------------+
-# path = '../test_move/'
-# dt = ["" for x in range(7)]
-# for x in range(7):
-#     dt[x] = open("dataset_" + piece_b[x], 'a+')
+def info_ext_move():
+    path = '../processed/'
+    dt = ["" for x in range(7)]
+    for x in range(7):
+        dt[x] = open("../update_move_" + piece_b[x] + "/pgninfo_ext_" + piece_b[x] + ".txt", 'a+')
 
-# for filename in os.listdir(path):
-#     if filename[0] == '.':
-#         continue
-#     pgn = open(path + filename, 'r')
-#     for line in pgn:
-#         # line = line.decode("utf-8")
-#         # print line
-#         try:
-#             output, piece = extract_features_dest(line)
-#             dt[piece_b.index(piece)].write(output)
-#         except:
-#             print 'error! ' + line
-#     pgn.close()
-# for x in range(7):
-#     dt[x].close()
-#
+    count = 0
+    for filename in os.listdir(path):
+        if filename[0] == '.':
+            continue
+        pgn = open(path + filename, 'r')
+        output = ""
+        for line in pgn:
+            count+=1
+            if count%1000 == 0:
+                print count
+            # line = line.decode("utf-8")
+            # print line
+            try:
+                output, piece = extract_features_dest(line)
+                dt[piece_b.index(piece)].write(output)
+            except:
+                print 'error! ' + line
+        pgn.close()
+    for x in range(7):
+        dt[x].close()
+    print count
+
 
 # ---------------------------------------+
 # extract information for piece selector |
 # ---------------------------------------+
-path = '../test/'
-dt = open("dataset_piece.txt", 'a+')
-count = 0
-for filename in os.listdir(path):
-    if filename[0] == '.':
-        continue
-    pgn = open(path + filename, 'r')
-    output = ""
-    for line in pgn:
-        count+=1
-        if count%1000 == 0:
-            print count
-        # line = line.decode("utf-8")
-        # print line
-        try:
-            output = extract_features_piece(line)
-            dt.write(output)
-        except:
-            print 'error! ' + line
-    pgn.close()
-dt.close()
+def info_ext_piece():
+    path = '../processed/'
+    dt = open("../update_piece/pgninfo_ext_piece.txt", 'a+')
+    count = 0
+    for filename in os.listdir(path):
+        if filename[0] == '.':
+            continue
+        pgn = open(path + filename, 'r')
+        output = ""
+        for line in pgn:
+            count+=1
+            if count%1000 == 0:
+                print count
+            # line = line.decode("utf-8")
+            # print line
+            try:
+                output = extract_features_piece(line)
+                dt.write(output)
+            except:
+                print 'error! ' + line
+        pgn.close()
+    dt.close()
+    print count
 
 # ------------------------------------------+
 # used to extract information in prediction |
