@@ -1,3 +1,11 @@
+# ---------------------------------------------------------------+
+# Ver 1.0    Nov 14 2016                                         |
+# Author: zxm                                                    |
+# Summary: to train a new piece selector by supervised learning  |
+#          using processed source data                           |
+# ---------------------------------------------------------------+
+
+
 import tensorflow as tf
 import os
 import numpy as np
@@ -16,9 +24,6 @@ def bias_variable(shape):
 def conv2d(x, W):
     return tf.nn.conv2d(x, W, strides=[1, 1, 1, 1], padding='SAME')
 
-# read input
-# mnist = input_data.read_data_sets("MNIST_data/", one_hot=True)
-# print("Download Done!")
 feature_chnl = 8
 
 feature_layer_1 = 32
@@ -72,7 +77,7 @@ sess.run(tf.initialize_all_variables())
 # create model saver
 saver = tf.train.Saver()
 
-path = '../train_shuffle/'
+path = '../train/'
 for filename in os.listdir(path):
     if filename[0] == '.':
         continue
@@ -94,6 +99,3 @@ for filename in os.listdir(path):
             train_step.run(feed_dict = {x: feature, y_: result})
         count += 1
         
-
-# # accuacy on test
-# print("test accuracy %g"%(accuracy.eval(feed_dict={x: mnist.test.images, y_: mnist.test.labels, keep_prob: 1.0})))

@@ -1,7 +1,11 @@
-# -------------------------------------------------------+
-# get information of chessboard                          |
-# used to extract information in prediction              |
-# -------------------------------------------------------+
+# -------------------------------------------------------------+
+# Ver 1.0    Nov 14 2016                                       |
+# Author: zxm                                                  |
+# Summary: extract information from pgn                        |
+#          used in move/piece selector to make move choice     |
+#          simplified version, use less features               |
+# -------------------------------------------------------------+
+
 
 from moveGeneration import *
 from validation import *
