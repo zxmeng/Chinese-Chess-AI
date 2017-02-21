@@ -3,6 +3,12 @@
 # Author: zxm                                                  |
 # Summary: to train existing piece selector by reinforcement   |
 #          using processed source data                         |
+#                                                              |
+# Update 1    Feb 21 2017                                      |
+# Summary: 1. handle tensorflow version errors                 |
+#          2. modify function update_piece_selector to         |
+#             recognize different model versions               |
+#          3. debug: tf.log(y_conv + 1e-10)                    |
 # -------------------------------------------------------------+
 
 
@@ -25,7 +31,7 @@ def conv2d(x, W):
     return tf.nn.conv2d(x, W, strides=[1, 1, 1, 1], padding='SAME')
 
 
-def update_piece_selector():
+def update_piece_selector(over, nver):
     feature_chnl = 8
 
     feature_layer_1 = 32
@@ -69,7 +75,7 @@ def update_piece_selector():
     y_ = tf.placeholder(tf.float32, [None, feature_layer_final])
 
     # model training
-    cross_entropy = -tf.reduce_sum(y_ * tf.log(y_conv))
+    cross_entropy = -tf.reduce_sum(y_ * tf.log(y_conv + 1e-10))
     train_step = tf.train.AdamOptimizer(1e-3).minimize(cross_entropy)
 
     sess.run(tf.global_variables_initializer())
@@ -82,7 +88,7 @@ def update_piece_selector():
 
     with sess.as_default():
         # resotre previously saved model
-        saver.restore(sess, '../model/my-model-piece_selector')
+        saver.restore(sess, '../model/my-model-piece_selector-' + over)
 
         # should be open the real-time game results file with rewards
         for filename in os.listdir(path):
@@ -111,6 +117,6 @@ def update_piece_selector():
             train_step.run(feed_dict = {x: feature[:(count%batch)/2,:], y_: reward[:(count%batch)/2,:]})
 
         # save updated model
-        saver.save(sess, '../model/my-model-piece_selector-updated')
+        saver.save(sess, '../model/my-model-piece_selector-' + nver)
         print count
 

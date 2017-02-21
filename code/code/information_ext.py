@@ -184,7 +184,6 @@ def extract_features_piece(fen):
 
 def extract_features_dest(fen):
     _chessboard, _player, _move, _piece_type, _winner = fen_reader(fen)
-    # print "flip"
     _chessboard, _move, _piece_type = flip(_chessboard, _player, _move, _piece_type)
 
     side_label = label_board_side(_chessboard)
@@ -215,31 +214,31 @@ def extract_features_dest(fen):
     # print output
     return output, _piece_type.lower()
 
-def extract_features_predict(fen):
-    _chessboard, _player, _move, _piece_type = fen_reader(fen)
-    _chessboard, _move, _piece_type = flip(_chessboard, _player, _move, _piece_type)
+# def extract_features_predict(fen):
+#     _chessboard, _player, _move, _piece_type = fen_reader(fen)
+#     _chessboard, _move, _piece_type = flip(_chessboard, _player, _move, _piece_type)
 
-    side_label = label_board_side(_chessboard)
-    # print side_label
-    type_label = np.zeros((7, 90), dtype=np.int8)
-    for x in range(7):
-        ptype = piece_b[x]
-        type_label[x] = label_board_type(_chessboard, ptype)
+#     side_label = label_board_side(_chessboard)
+#     # print side_label
+#     type_label = np.zeros((7, 90), dtype=np.int8)
+#     for x in range(7):
+#         ptype = piece_b[x]
+#         type_label[x] = label_board_type(_chessboard, ptype)
 
-    # liberties_label = label_liberties(_chessboard)
-    # atkdfd_label = label_attack_defend(_chessboard)
-    # chosen_piece_label = label_chosen_piece(_move)
+#     # liberties_label = label_liberties(_chessboard)
+#     # atkdfd_label = label_attack_defend(_chessboard)
+#     # chosen_piece_label = label_chosen_piece(_move)
 
-    chnl_option = {0: side_label, 1: type_label[0], 2: type_label[1], 3: type_label[2], 4: type_label[3],
-                   5: type_label[4], 6: type_label[5], 7: type_label[6]}
-    output = ""
-    for r in range(10):
-        for c in range(9):
-            for x in range(8):
-                output += str(chnl_option[x][r*9 + c])
-                output += ','
-    output += '\n'
-    return output
+#     chnl_option = {0: side_label, 1: type_label[0], 2: type_label[1], 3: type_label[2], 4: type_label[3],
+#                    5: type_label[4], 6: type_label[5], 7: type_label[6]}
+#     output = ""
+#     for r in range(10):
+#         for c in range(9):
+#             for x in range(8):
+#                 output += str(chnl_option[x][r*9 + c])
+#                 output += ','
+#     output += '\n'
+#     return output
 
 # ---------------------------------------+
 # extract information for move selector  |
@@ -248,7 +247,7 @@ def info_ext_move():
     path = '../processed/'
     dt = ["" for x in range(7)]
     for x in range(7):
-        dt[x] = open("../update_move_" + piece_b[x] + "/pgninfo_ext_" + piece_b[x] + ".txt", 'a+')
+        dt[x] = open("../update_move_" + piece_b[x] + "/pgninfo_ext_" + piece_b[x] + ".txt", 'w')
 
     count = 0
     for filename in os.listdir(path):
@@ -278,7 +277,7 @@ def info_ext_move():
 # ---------------------------------------+
 def info_ext_piece():
     path = '../processed/'
-    dt = open("../update_piece/pgninfo_ext_piece.txt", 'a+')
+    dt = open("../update_piece/pgninfo_ext_piece.txt", 'w')
     count = 0
     for filename in os.listdir(path):
         if filename[0] == '.':

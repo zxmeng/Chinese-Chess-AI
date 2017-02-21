@@ -9,12 +9,24 @@
 # Author: zxm                                                  |
 # Summary: to train existing model by reinforcement            |
 #          using processed source data                         |
+#                                                              |
+# Update 1    Feb 21 2017                                      |
+# Summary: 1. modify to accept command line arguments          |
 # -------------------------------------------------------------+
 
 import os
+import sys
 from information_ext import *
 from update_piece import *
 from update_move import *
+
+if len(sys.argv) != 3:
+	print "Wrong number of arguments!"
+	exit(1)
+else:
+	print "***** Start Training *****"
+	print "Old Version: " + str(sys.argv[1])
+	print "New Version: " + str(sys.argv[2])
 
 
 # --------------------------------------------------------+
@@ -40,9 +52,9 @@ for filename in os.listdir(path):
 			continue
 		elif "wins" in line:
 			winner = line[0]
-			print winner
 			output = output.replace("\n", "," + winner + "\n")
 			dt.write(output)
+			
 			output = ""
 			continue
 		else:
@@ -66,11 +78,15 @@ info_ext_move()
 # --------------------------------------------------+
 # call update functions to train the old models     |
 # --------------------------------------------------+
-update_piece_selector()
-update_move_selector("r")
-update_move_selector("c")
-update_move_selector("b")
-update_move_selector("a")
-update_move_selector("n")
-update_move_selector("k")
-update_move_selector("p")
+over = str(sys.argv[1])
+nver = str(sys.argv[2])
+
+update_piece_selector(over, nver)
+update_move_selector("r", over, nver)
+update_move_selector("c", over, nver)
+update_move_selector("b", over, nver)
+update_move_selector("a", over, nver)
+update_move_selector("n", over, nver)
+update_move_selector("k", over, nver)
+update_move_selector("p", over, nver)
+
