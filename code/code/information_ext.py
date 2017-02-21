@@ -8,6 +8,9 @@
 # Based on information.py                                      |
 # Author: zxm                                                  |
 # Summary: add function info_ext_move() and info_ext_piece()   |
+#                                                              |
+# Update 1    Feb 21 2017                                      |
+# Summary: 1. modify the label criterion for negative reward   |
 # -------------------------------------------------------------+
 
 from moveGeneration import *
@@ -113,21 +116,25 @@ def label_valid_moves_tile(chessboard, tile):
     return np.reshape(newboard, 90)
 
 # label reward for 
-def label_chosen_piece(move, player, winner):
-    newboard = np.zeros((10, 9), dtype=np.int8)
+def label_chosen_piece(move, player, winner, side_label):
     if player == winner:
+        newboard = np.zeros((10, 9), dtype=np.int8)
         newboard[move[0]][move[1]] = 1
     else:
-        newboard[move[0]][move[1]] = -1
+        newboard = side_label.reshape((10, 9))
+        newboard = newboard*0.5 + np.fabs(newboard)*0.5 - 1
+        newboard[move[0]][move[1]] = -0.5
+
     return np.reshape(newboard, 90)
 
 
-def label_chosen_dest(move, player, winner):
-    newboard = np.zeros((10, 9), dtype=np.int8)
+def label_chosen_dest(move, player, winner, validmoves_label):
     if player == winner:
+        newboard = np.zeros((10, 9), dtype=np.int8)
         newboard[move[2]][move[3]] = 1
     else:
-        newboard[move[2]][move[3]] = -1
+        newboard = validmoves_label.reshape((10, 9))
+        newboard[move[2]][move[3]] = -0.5
     return np.reshape(newboard, 90)
 
 
@@ -163,7 +170,7 @@ def extract_features_piece(fen):
 
     # liberties_label = label_liberties(_chessboard)
     # atkdfd_label = label_attack_defend(_chessboard)
-    chosen_piece_label = label_chosen_piece(_move, _player, _winner)
+    chosen_piece_label = label_chosen_piece(_move, _player, _winner, side_label)
 
     chnl_option = {0: side_label, 1: type_label[0], 2: type_label[1], 3: type_label[2], 4: type_label[3],
                    5: type_label[4], 6: type_label[5], 7: type_label[6]}
@@ -194,8 +201,9 @@ def extract_features_dest(fen):
 
     # liberties_label = label_liberties(_chessboard)
     # atkdfd_label = label_attack_defend(_chessboard)
-    chosen_dest_label = label_chosen_dest(_move, _player, _winner)
+
     validmoves_label = label_valid_moves_tile(_chessboard, _move[:2])
+    chosen_dest_label = label_chosen_dest(_move, _player, _winner, validmoves_label)
 
     chnl_option = {0: side_label, 1: type_label[0], 2: type_label[1], 3: type_label[2], 4: type_label[3],
                    5: type_label[4], 6: type_label[5], 7: type_label[6], 8: validmoves_label}

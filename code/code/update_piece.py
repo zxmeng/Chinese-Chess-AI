@@ -75,8 +75,8 @@ def update_piece_selector(over, nver):
     y_ = tf.placeholder(tf.float32, [None, feature_layer_final])
 
     # model training
-    cross_entropy = -tf.reduce_sum(y_ * tf.log(y_conv + 1e-10))
-    train_step = tf.train.AdamOptimizer(1e-3).minimize(cross_entropy)
+    cross_entropy = - tf.reduce_sum(y_ * tf.log(y_conv + 1e-10))
+    train_step = tf.train.AdamOptimizer(1e-4).minimize(cross_entropy)
 
     sess.run(tf.global_variables_initializer())
 
