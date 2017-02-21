@@ -59,7 +59,7 @@ def piece_selector_nn(fen):
 
     y_conv = tf.nn.softmax(tf.matmul(h_fc1, W_fc2) + b_fc2)
 
-    sess.run(tf.initialize_all_variables())
+    sess.run(tf.global_variables_initializer())
 
     # create model saver
     saver = tf.train.Saver()
