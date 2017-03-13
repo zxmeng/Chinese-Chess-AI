@@ -25,7 +25,7 @@ def conv2d(x, W):
     return tf.nn.conv2d(x, W, strides=[1, 1, 1, 1], padding='SAME')
 
 
-def update_piece_selector(over, nver):
+def update_piece_selector():
     feature_chnl = 10
 
     feature_layer_1 = 32
