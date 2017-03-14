@@ -91,15 +91,15 @@ def update_piece_selector():
         w_rate = np.zeros((batch/2, 1))
         count = 0
         for line in pgn:
-            if count%2 == 0:
+            if count%3 == 0:
                 feature[(count%batch)/2] = line[0:-2].split(',')
-            else:
-                w_rate[(count%batch)/2] = line[0:-2].split(',')
+            elif count%3 == 1:
+                w_rate[(count%batch)/2] = int(line)
 
             if count % 10000 == 9999:
                 saver.save(sess, model_path + 'my-model', global_step = (count+1)/2)
-                train_accuacy = accuracy.eval(feed_dict={x: feature, y_: w_rate})
-                print("step %d, training accuracy %g"%((count+1)/2, train_accuacy))
+  #              train_accuacy = accuracy.eval(feed_dict={x: feature, y_: w_rate})
+  #              print("step %d, training accuracy %g"%((count+1)/2, train_accuacy))
 
             if count != 0 and count%batch == batch - 1:
                 train_step.run(feed_dict = {x: feature, y_: w_rate})
@@ -113,3 +113,4 @@ def update_piece_selector():
     saver.save(sess, model_path + 'my-model', global_step = (count+1)/2)
     print count
 
+update_piece_selector()

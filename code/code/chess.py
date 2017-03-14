@@ -14,7 +14,7 @@ import sys
 sys.path.insert(0,'chess2p')
 import chess2p as game2p
 
-os.environ['TF_CPP_MIN_VLOG_LEVEL']='3'
+# os.environ['TF_CPP_MIN_VLOG_LEVEL']='3'
 
 # the default path is in "qipu"
 
@@ -22,7 +22,13 @@ f=open("../qipu/"+sys.argv[1],"a+")
 
 #for piece selector inorder not to select an empty block
 def process1(prediction,fen):
-    prediction[prediction<0.001] = 0.0
+#    print prediction
+    for i in range(10):
+	for j in range(9):
+	    temp_r, temp_c = flip(fen, i, j)	
+	    if (fen[temp_r*10+temp_c]=='1'):
+	    	prediction[i][j]=0.0
+#    prediction[prediction<0.001] = 0.0
     # prediction = np.power(prediction, 2)
     total = np.sum(prediction)
     prediction = prediction / total
@@ -45,7 +51,7 @@ def process1(prediction,fen):
                 return i, j
 
 def process(prediction):
-    prediction[prediction<0.001] = 0.0
+#    prediction[prediction<0.001] = 0.0
     # prediction = np.power(prediction, 2)
     total = np.sum(prediction)
     prediction = prediction / total
@@ -67,7 +73,7 @@ def printstat(prediction):
     for i in range(10):
         for j in range(9):
             temp[i][j] = prediction[9-i][8-j]
-        # print temp[i]
+            print temp[i]
 
 
 def flip(fen, x, y):
@@ -104,16 +110,23 @@ def on_a_response(*args):
     prediction = piece_selector_nn(fen)
     # printstat(prediction)
     # process prediction
-    for i in range(1):
+    for i in range(3):
         move[i][0], move[i][1] = process1(prediction,fen)
+# keep the value before flip
+        temp1 = move[i][0]
+        temp2 = move[i][1]
         move[i][0], move[i][1] = flip(fen, move[i][0], move[i][1])
         # print move[i][0], move[i][1]
 
         # move selector
         prediction_m = move_selector_nn(fen, [move[i][0], move[i][1]])
-        printstat(prediction_m)
+#        printstat(prediction_m)
+        prediction_m[temp1][temp2] = 0
+# not select own piece
+
         # process prediction
         move[i][2], move[i][3] = process(prediction_m)
+        
         move[i][2], move[i][3] = flip(fen, move[i][2], move[i][3])
         # print move[i][2], move[i][3]
 
@@ -193,7 +206,7 @@ fen = "rnbakabnr/111111111/1c11111c1/p1p1p1p1p/111111111/111111111/P1P1P1P1P/1C1
 
 # training with 2p
 
-for x in xrange(1,500):
+for x in xrange(1,1000):
     print x
     f.write("Game "+str(x)+"\n")
     for i in xrange(1,1000):
