@@ -12,51 +12,42 @@ from evaluate import *
 
 fileadd = "../qipu/1.txt"
 
-def process1(prediction,fen):
-    print prediction
-    for i in range(10):
-        for j in range(9):
-            temp_r, temp_c = flip(fen, i, j)    
-            if (fen[temp_r*10+temp_c]=='1'):
-                prediction[i][j]=0.0
-#    prediction[prediction<0.001] = 0.0
-    # prediction = np.power(prediction, 2)
-    total = np.sum(prediction)
-    prediction = prediction / total
+# fen: not flipped
+# prediction: flipped
 
-    rand = np.random.uniform(0,1)
-
- #   temp = np.amax(prediction)
-    # temp = 0
- #   for i in range(10):
- #       for j in range(9):
- #           temp += prediction[i][j]
- #           temp_r, temp_c = flip(fen, i, j)
- #           if (temp >= rand) and (fen[temp_r*10+temp_c]!='1'):
- #               return i, j
-
+def get_max(prediction):
     temp = np.amax(prediction)
     for i in range(10):
         for j in range(9):
             if (temp == prediction[i][j]):
                 return i, j
 
+
+def process1(prediction,fen):
+    print prediction
+    for i in range(10):
+        for j in range(9):
+            temp_r, temp_c = flip(fen, i, j)    
+            if (fen[i*10+j]=='1'):
+                prediction[temp_r][temp_c]=0.0
+
+    prediction[prediction<0.01] = 0.0
+    total = np.sum(prediction)
+    prediction = prediction / total
+
+    
+
 def process(prediction):
-    prediction[prediction<0.001] = 0.0
+    prediction[prediction<0.01] = 0.0
     # prediction = np.power(prediction, 2)
     total = np.sum(prediction)
     prediction = prediction / total
 
-    rand = np.random.uniform(0,1)
-
     temp = np.amax(prediction)
-    # temp = 0
     for i in range(10):
         for j in range(9):
             if (temp == prediction[i][j]):
                 return i,j
-#            if (temp > rand):
-#                return i, j
 
 
 def printstat(prediction):
@@ -85,6 +76,7 @@ def on_a_response(*args):
     fen = message[0]
     f.write(fen)
     f.write(",")
+
     newboard = [[0 for x in range(9)] for y in range(10)]
     for i in xrange(0,10):
             for j in xrange(0,9):
@@ -93,6 +85,7 @@ def on_a_response(*args):
         opp="b"
     else:
         opp="r"
+
     checkflag,tempmove=check(newboard,opp)
     if(checkflag==1):
         string = ''
@@ -102,17 +95,16 @@ def on_a_response(*args):
         f.write(string+","+ fen[tempmove[0]*10+tempmove[1]] +"\n")
         socketIO.emit("chat1",string+","+message[1])
         return
-#        return None, fen[100]
-    temp = np.zeros((3),dtype=np.float32)
-    temp_m = 0.0
-    # piece selector
+
     prediction = piece_selector_nn(fen)
-    # printstat(prediction)
-    # process prediction
-    for i in range(3):
-        move[i][0], move[i][1] = process1(prediction,fen)
+    process1(prediction,fen)
+    for i in range(precision):
+        move[i][0], move[i][1] = get_max(prediction)
+        if prediction[move[i][0]][move[i][1]] == 0:
+            break
+        temp1 = move[i][0]
+        temp2 = move[i][1]
         move[i][0], move[i][1] = flip(fen, move[i][0], move[i][1])
-        # print move[i][0], move[i][1]
 
         # move selector
         prediction_m = move_selector_nn(fen, [move[i][0], move[i][1]])
@@ -120,21 +112,11 @@ def on_a_response(*args):
         # process prediction
         move[i][2], move[i][3] = process(prediction_m)
         move[i][2], move[i][3] = flip(fen, move[i][2], move[i][3])
-        # print move[i][2], move[i][3]
 
-        # temp[i] = prediction[9 - move[i][0]][8 - move[i][1]] * prediction_m[9 - move[i][2]][8 - move[i][3]]
-        prediction[9 - move[i][0]][8 - move[i][1]] = 0.0
+        prediction[temp1][temp2] = 0.0
 
-        # if temp[i] > temp_m:
-        #     temp_m = temp[i]
 
-    # j = 0
-    # for i in range(3):
-    #     if temp[i] == temp_m:
-    #         j = i
-    #         break
-
-    j = eval_move(newboard,move,3,fen[100])
+    j = eval_move(newboard,move[:i+1],i+1,fen[100])
 
     string = ''
     for x in xrange(0,4):
@@ -184,7 +166,8 @@ def on_a_response(*args):
 
 # socket.gethostbyaddr('localhost:3000')
 # import socket
-move = np.zeros((3, 4), dtype=np.int)
+precision = 10
+move = np.zeros((precision, 4), dtype=np.int)
 host = 'localhost'
 port = 3001
 socketIO = SocketIO('localhost', port)
