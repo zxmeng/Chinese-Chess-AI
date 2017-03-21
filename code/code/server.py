@@ -11,6 +11,35 @@ from check import *
 
 fileadd = "../qipu/1.txt"
 
+def process1(prediction,fen):
+    print prediction
+    for i in range(10):
+        for j in range(9):
+            temp_r, temp_c = flip(fen, i, j)    
+            if (fen[temp_r*10+temp_c]=='1'):
+                prediction[i][j]=0.0
+#    prediction[prediction<0.001] = 0.0
+    # prediction = np.power(prediction, 2)
+    total = np.sum(prediction)
+    prediction = prediction / total
+
+    rand = np.random.uniform(0,1)
+
+ #   temp = np.amax(prediction)
+    # temp = 0
+ #   for i in range(10):
+ #       for j in range(9):
+ #           temp += prediction[i][j]
+ #           temp_r, temp_c = flip(fen, i, j)
+ #           if (temp >= rand) and (fen[temp_r*10+temp_c]!='1'):
+ #               return i, j
+
+    temp = np.amax(prediction)
+    for i in range(10):
+        for j in range(9):
+            if (temp == prediction[i][j]):
+                return i, j
+
 def process(prediction):
     prediction[prediction<0.001] = 0.0
     # prediction = np.power(prediction, 2)
@@ -19,13 +48,14 @@ def process(prediction):
 
     rand = np.random.uniform(0,1)
 
-    # temp = np.amax(prediction)
-    temp = 0
+    temp = np.amax(prediction)
+    # temp = 0
     for i in range(10):
         for j in range(9):
-            temp += prediction[i][j]
-            if temp > rand:
-                return i, j
+            if (temp == prediction[i][j]):
+                return i,j
+#            if (temp > rand):
+#                return i, j
 
 
 def printstat(prediction):
@@ -66,10 +96,11 @@ def on_a_response(*args):
     if(checkflag==1):
         string = ''
         for x in xrange(0,4):
+            print string
             string = string + str(tempmove[x])
-	f.write(string+","+ fen[tempmove[0]*10+tempmove[1]] +"\n")
-	socketIO.emit("chat1",tempmove)
-	return
+        f.write(string+","+ fen[tempmove[0]*10+tempmove[1]] +"\n")
+        socketIO.emit("chat1",string+","+message[1])
+        return
 #        return None, fen[100]
     temp = np.zeros((3),dtype=np.float32)
     temp_m = 0.0
@@ -77,8 +108,8 @@ def on_a_response(*args):
     prediction = piece_selector_nn(fen)
     # printstat(prediction)
     # process prediction
-    for i in range(1):
-        move[i][0], move[i][1] = process(prediction)
+    for i in range(3):
+        move[i][0], move[i][1] = process1(prediction,fen)
         move[i][0], move[i][1] = flip(fen, move[i][0], move[i][1])
         # print move[i][0], move[i][1]
 
