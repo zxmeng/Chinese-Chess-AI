@@ -1,15 +1,15 @@
 # -------------------------------------------------------------+
 # Ver 1.0    Mar 13 2017                                       |
-# Author: zxm                                                  |
-# Summary: to train a evaluation model by supervised learning  |
-#          using processed source data                         |
+# Author: zhz                                                  |
+# Summary: use the model to calculate the score of current     |
+#          status                                              |
 # -------------------------------------------------------------+
 
 
 import tensorflow as tf
 import numpy as np
 import os
-
+import information_eva as ie
 
 def weight_varible(shape):
     initial = tf.truncated_normal(shape, stddev=0.1)
@@ -25,13 +25,13 @@ def conv2d(x, W):
     return tf.nn.conv2d(x, W, strides=[1, 1, 1, 1], padding='SAME')
 
 
-def update_piece_selector():
+def evaluate(fen):
     feature_chnl = 10
 
-    feature_layer_1 = 64
-    feature_layer_2 = 128
+    feature_layer_1 = 32
+    feature_layer_2 = 64
 
-    feature_layer_soft = 512
+    feature_layer_soft = 32
     feature_layer_final = 1
 
     tf.reset_default_graph()
@@ -80,37 +80,17 @@ def update_piece_selector():
     path = '../eva_train/'
     model_path = '../eva_model/'
 
+    print fen
+    data = ie.extract_features_eva(fen)
+    feature = np.zeros((1,900))
+    print feature
+    feature[0] = (data[0:-1].split(','))[0:900]
+    with sess.as_default():
+        saver.restore(sess,model_path + 'my-model')
+        prediction=y_conv.eval(feed_dict={x: feature})
+    sess.close()
+    return prediction
+
+print evaluate("rnbakabnr/111111111/1c11111c1/p1p1p1p1p/111111111/111111111/P1P1P1P1P/1C11111C1/111111111/RNBAKABNR/r")
     # should be open the real-time game results file with rewards
-    for filename in os.listdir(path):
-        if filename[0] == '.':
-            continue
-        pgn = open(path + filename, 'r')
-
-        batch = 1000
-        feature = np.zeros((batch/2, 900))
-        w_rate = np.zeros((batch/2, 1))
-        count = 0
-        for line in pgn:
-            if count%3 == 0:
-                feature[(count%batch)/2] = line[0:-2].split(',')
-            elif count%3 == 1:
-                w_rate[(count%batch)/2] = int(line)
-
-            if count % 10000 == 9999:
-                saver.save(sess, model_path + 'my-model', global_step = (count+1)/2)
-  #              train_accuacy = accuracy.eval(feed_dict={x: feature, y_: w_rate})
-  #              print("step %d, training accuracy %g"%((count+1)/2, train_accuacy))
-
-            if count != 0 and count%batch == batch - 1:
-                train_step.run(feed_dict = {x: feature, y_: w_rate})
-                feature = np.zeros((batch/2, 900))
-                w_rate = np.zeros((batch/2, 1))
-
-            count += 1
-
-    if count != 0 and count%batch != batch - 1:
-        train_step.run(feed_dict = {x: feature[:(count%batch)/2,:], y_: w_rate[:(count%batch)/2,:]})
-    saver.save(sess, model_path + 'my-model', global_step = (count+1)/2)
-    print count
-
-update_piece_selector()
+    
