@@ -100,7 +100,7 @@ def evaluate(fen):
 #print evaluate("r11akabnr/111111111/1c11111c1/p1p1p1p1p/111111111/111111111/P1P1P1P1P/1C11111C1/111111111/RNBAKABN1/r")
 
 import ctypes
-
+import check as ck
 evaluator = ctypes.CDLL('/root/code/example.so')
 
 
@@ -119,16 +119,26 @@ def eval_move(board, move,size,side):
             for j in xrange(0,9):
                 fen += newboard[i][j]
             fen += "/"
-        if(side=="r"):
-            fen+="b"
+        # fen += side
+        if side=='r':
+            fen += "b"
         else:
-            fen+="r"
-        pass
-	print fen
+            fen += 'r'
+            pass
+
+        print fen
+        isChecked, _ = ck.check(newboard,side)
+        if isChecked == 1:
+            score[x] = 9999
+            continue
+        # evaluator.evaluate.argtypes = [ctypes.c_char_p]
         score[x]=evaluator.evaluate(fen)
+        # score[x] = evaluate(fen)
+
 
     index = np.argmin(score)
     print score
+    print index
     return index
 
     pass

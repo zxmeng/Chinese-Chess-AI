@@ -116,7 +116,7 @@ def on_a_response(*args):
         prediction[temp1][temp2] = 0.0
 
 
-    j = eval_move(newboard,move[:i+1],i+1,fen[100])
+    j = eval_move(newboard,move[:i],i,fen[100])
 
     string = ''
     for x in xrange(0,4):
