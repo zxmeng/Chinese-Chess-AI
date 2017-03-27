@@ -107,7 +107,7 @@ def on_a_response(*args):
     temp = np.zeros((3),dtype=np.float32)
     temp_m = 0.0
     # piece selector
-    prediction = piece_selector_nn(fen)
+    prediction = fuck.piece_selector_nn(fen)
     # printstat(prediction)
     # process prediction
     for i in range(3):
@@ -205,6 +205,22 @@ fen = "rnbakabnr/111111111/1c11111c1/p1p1p1p1p/111111111/111111111/P1P1P1P1P/1C1
 # end of part
 
 # training with 2p
+fuck = Fuck()
+fuck.init_piece_selector()
+fuck_a = Fuck_m("a")
+fuck_a.init_move_selector()
+fuck_b = Fuck_m("b")
+fuck_b.init_move_selector()
+fuck_c = Fuck_m("c")
+fuck_c.init_move_selector()
+fuck_k = Fuck_m("k")
+fuck_k.init_move_selector()
+fuck_p = Fuck_m("p")
+fuck_p.init_move_selector()
+fuck_r = Fuck_m("r")
+fuck_r.init_move_selector()
+fuck_n = Fuck_m("n")
+fuck_n.init_move_selector()
 
 for x in xrange(1,1000):
     print x
