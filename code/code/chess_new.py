@@ -50,12 +50,25 @@ def process(prediction):
     total = np.sum(prediction)
     prediction = prediction / total
 
-    temp = np.amax(prediction)
+    # temp = np.amax(prediction)
+    # for i in range(10):
+    #     for j in range(9):
+    #         if (temp == prediction[i][j]):
+    #             return i,j
+
+
+def random_select(prediction):
+    prediction[prediction<0.01] = 0.0
+    total = np.sum(prediction)
+    prediction = prediction / total
+
+    rand = np.random.uniform(0,1)
+    temp = 0
     for i in range(10):
         for j in range(9):
-            if (temp == prediction[i][j]):
+            temp += prediction[i][j]
+            if (temp > rand):
                 return i,j
-
 
 def printstat(prediction):
     temp = np.zeros((10,9))
@@ -86,6 +99,7 @@ def on_a_response(*args):
         opp="b"
     else:
         opp="r"
+
     checkflag,tempmove=check(newboard,opp)
     if(checkflag==1):
         string = ''
@@ -94,31 +108,64 @@ def on_a_response(*args):
         f.write(string+","+ fen[tempmove[0]*10+tempmove[1]] +"\n")
         # print tempmove
         return None, fen[100]
-    prediction = piece_selector_nn(fen)
-    process1(prediction,fen)
-    for i in range(precision):
+
+    prediction = fuck.piece_selector_nn(fen)
+    process1(prediction, fen)
+
+    for i in range(int(precision/3)):
         move[i][0], move[i][1] = get_max(prediction)
         if prediction[move[i][0]][move[i][1]] == 0:
             break
-        temp1 = move[i][0]
-        temp2 = move[i][1]
+
+        temp0 = move[i][0]
+        temp1 = move[i][1]
         move[i][0], move[i][1] = flip(fen, move[i][0], move[i][1])
 
         # move selector
-        prediction_m = move_selector_nn(fen, [move[i][0], move[i][1]])
+        output, piece_type = extract_features_dest(fen, [move[i][0], move[i][1]])
+        if piece_type == "a":
+            prediction_m = fuck_a.move_selector_nn(output)
+        elif piece_type == "b":
+            prediction_m = fuck_b.move_selector_nn(output)
+        elif piece_type == "c":
+            prediction_m = fuck_c.move_selector_nn(output)
+        elif piece_type == "n":
+            prediction_m = fuck_n.move_selector_nn(output)
+        elif piece_type == "k":
+            prediction_m = fuck_k.move_selector_nn(output)
+        elif piece_type == "p":
+            prediction_m = fuck_p.move_selector_nn(output)
+        elif piece_type == "r":
+            prediction_m = fuck_r.move_selector_nn(output)
+        pass
         # printstat(prediction_m)
         # process prediction
-        move[i][2], move[i][3] = process(prediction_m)
-        move[i][2], move[i][3] = flip(fen, move[i][2], move[i][3])
+        # move[i][2], move[i][3] = random_select(prediction_m)
+        process(prediction_m)
+        for j in range(3):
+            move[i+j][0] = move[i][0]
+            move[i+j][1] = move[i][1]
 
-        prediction[temp1][temp2] = 0.0
+            move[i+j][2], move[i+j][3] = get_max(prediction_m)
+            if prediction_m[move[i+j][2]][move[i+j][3]] == 0:
+                break
+
+            temp2 = move[i+j][2]
+            temp3 = move[i+j][3]
+            move[i+j][2], move[i+j][3] = flip(fen, move[i+j][2], move[i+j][3])
+
+            prediction_m[temp2][temp3] = 0.0
+
+        i = i + j
+        prediction[temp0][temp1] = 0.0
 
 
-    j = eval_move(newboard,move[:i],i,fen[100])
+    index = eval_move(newboard,move[:i],i,fen[100])
+    # index = minimax_search(newboard, move[:i], i, fen[100])
 
     string = ''
     for x in xrange(0,4):
-        string = string + str(move[j][x])
+        string = string + str(move[index][x])
     # print string
 
     f.write(string+","+fen[move[0][0]*10+move[0][1]]+"\n")
@@ -140,47 +187,111 @@ def on_a_response(*args):
     # print fen1
 
     return fen1,None
-    # socketIO.emit('chat1',string)
+
+
+def move_selection(fen):
+    # transfer fen to array board
+    newboard = [[0 for x in range(9)] for y in range(10)]
+    for i in xrange(0, 10):
+            for j in xrange(0,9):
+                newboard[i][j] = fen[i*10 + j]
+
+    # get opponent
+    if (fen[100] == "r"):
+        opp = "b"
+    else:
+        opp = "r"
+
+    # detect whether it's checkmated
+    checkflag, tempmove = check(newboard, opp)
+    if(checkflag == 1):
+        return [-1, -1, -1, -1]
+
+    # piece selector make prediction
+    prediction = fuck.piece_selector_nn(fen)
+    process1(prediction, fen)
+
+    for i in range(int(precision/3)):
+        move[i][0], move[i][1] = get_max(prediction)
+        if prediction[move[i][0]][move[i][1]] == 0:
+            break
+
+        temp0 = move[i][0]
+        temp1 = move[i][1]
+        move[i][0], move[i][1] = flip(fen, move[i][0], move[i][1])
+
+        # move selector make prediction
+        output, piece_type = extract_features_dest(fen, [move[i][0], move[i][1]])
+        if piece_type == "a":
+            prediction_m = fuck_a.move_selector_nn(output)
+        elif piece_type == "b":
+            prediction_m = fuck_b.move_selector_nn(output)
+        elif piece_type == "c":
+            prediction_m = fuck_c.move_selector_nn(output)
+        elif piece_type == "n":
+            prediction_m = fuck_n.move_selector_nn(output)
+        elif piece_type == "k":
+            prediction_m = fuck_k.move_selector_nn(output)
+        elif piece_type == "p":
+            prediction_m = fuck_p.move_selector_nn(output)
+        elif piece_type == "r":
+            prediction_m = fuck_r.move_selector_nn(output)
+        pass
+        process(prediction_m)
+        
+        for j in range(3):
+            move[i+j][0] = move[i][0]
+            move[i+j][1] = move[i][1]
+
+            move[i+j][2], move[i+j][3] = get_max(prediction_m)
+            if prediction_m[move[i+j][2]][move[i+j][3]] == 0:
+                break
+
+            temp2 = move[i+j][2]
+            temp3 = move[i+j][3]
+            move[i+j][2], move[i+j][3] = flip(fen, move[i+j][2], move[i+j][3])
+
+            prediction_m[temp2][temp3] = 0.0
+
+        i = i + j
+        prediction[temp0][temp1] = 0.0
+
+
+    index = eval_move(newboard,move[:i],i,fen[100])
+
+    return move[index]
+
+
+
+def minimax_search(chessboard, move, num, side):
+
+
     
-precision = 10
+precision = 15
 move = np.zeros((precision, 4), dtype=np.int)
 
 
 fen = "rnbakabnr/111111111/1c11111c1/p1p1p1p1p/111111111/111111111/P1P1P1P1P/1C11111C1/111111111/RNBAKABNR/r"
-# fen = "111a1ab11/11R111111/111k11111/p11Nn111p/111111111/111111111/111C1111c/111111R11/111111111/11BAKAB11,b"
-# fen = "11bakab11/111111111/11R111111/C111c1111/111111111/111111111/P111Nn11P/11111K111/111111r11/11BA1A111,r"
-#print fen
-# on_a_response(fen)
-
-# the part is for self training
-
-# for x in xrange(1,500):
-#     print x
-#     f.write("Game "+str(x)+"\n")
-#     for i in xrange(1,1000):
-#         fen, win = on_a_response(fen)
-#         # print win
-#         if(win == "r"):
-#             f.write("r wins\n")
-#             # print "r"
-#             print i
-#             break
-#         elif(win == "b"):
-#             f.write("b wins\n")
-#             # print "b"
-#             print i
-#             break
-#         # print fen
-#         pass
-#     fen = "rnbakabnr/111111111/1c11111c1/p1p1p1p1p/111111111/111111111/P1P1P1P1P/1C11111C1/111111111/RNBAKABNR/r"
-#     pass
 
 
-# end of part
+fuck = Fuck()
+fuck.init_piece_selector()
+fuck_a = Fuck_m("a")
+fuck_a.init_move_selector()
+fuck_b = Fuck_m("b")
+fuck_b.init_move_selector()
+fuck_c = Fuck_m("c")
+fuck_c.init_move_selector()
+fuck_k = Fuck_m("k")
+fuck_k.init_move_selector()
+fuck_p = Fuck_m("p")
+fuck_p.init_move_selector()
+fuck_r = Fuck_m("r")
+fuck_r.init_move_selector()
+fuck_n = Fuck_m("n")
+fuck_n.init_move_selector()
 
-# training with 2p
-
-for x in xrange(1,10):
+for x in xrange(1,1000):
     print x
     f.write("Game "+str(x)+"\n")
     for i in xrange(1,1000):

@@ -119,7 +119,23 @@ def on_a_response(*args):
         # print move[i][0], move[i][1]
 
         # move selector
-        prediction_m = move_selector_nn(fen, [move[i][0], move[i][1]])
+        # prediction_m = move_selector_nn(fen, [move[i][0], move[i][1]])
+        output, piece_type = extract_features_dest(fen, [move[i][0], move[i][1]])
+        if piece_type == "a":
+            prediction_m = fuck_a.move_selector_nn(output)
+        elif piece_type == "b":
+            prediction_m = fuck_b.move_selector_nn(output)
+        elif piece_type == "c":
+            prediction_m = fuck_c.move_selector_nn(output)
+        elif piece_type == "n":
+            prediction_m = fuck_n.move_selector_nn(output)
+        elif piece_type == "k":
+            prediction_m = fuck_k.move_selector_nn(output)
+        elif piece_type == "p":
+            prediction_m = fuck_p.move_selector_nn(output)
+        elif piece_type == "r":
+            prediction_m = fuck_r.move_selector_nn(output)
+        pass
 #        printstat(prediction_m)
         prediction_m[temp1][temp2] = 0
 # not select own piece
@@ -205,6 +221,7 @@ fen = "rnbakabnr/111111111/1c11111c1/p1p1p1p1p/111111111/111111111/P1P1P1P1P/1C1
 # end of part
 
 # training with 2p
+
 fuck = Fuck()
 fuck.init_piece_selector()
 fuck_a = Fuck_m("a")
@@ -221,6 +238,7 @@ fuck_r = Fuck_m("r")
 fuck_r.init_move_selector()
 fuck_n = Fuck_m("n")
 fuck_n.init_move_selector()
+
 
 for x in xrange(1,1000):
     print x
