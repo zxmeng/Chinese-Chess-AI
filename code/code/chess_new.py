@@ -1,4 +1,4 @@
-import commmon
+from common import *
 
 import sys
 sys.path.insert(0,'chess2p')
@@ -38,7 +38,7 @@ def on_a_response(*args):
         f.write(string + "," + fen[tempmove[0]*10 + tempmove[1]] + "\n")
         return None, fen[100]
 
-    index = move_selection(fen)
+    index = move_selection(fen,newboard)
 
     string = ''
     for x in xrange(0,4):

@@ -131,7 +131,7 @@ def eval_move(board, move,size,side):
         if isChecked == 1:
             score[x] = 9999
             continue
-        # evaluator.evaluate.argtypes = [ctypes.c_char_p]
+        evaluator.evaluate.argtypes = [ctypes.c_char_p]
         score[x]=evaluator.evaluate(fen)
         # score[x] = evaluate(fen)
 

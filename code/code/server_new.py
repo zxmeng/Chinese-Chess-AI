@@ -1,4 +1,4 @@
-import commmon
+from common import *
 
 fileadd = "../qipu/1.txt"
 f = open(fileadd,"a")
@@ -41,7 +41,7 @@ def on_a_response(*args):
         socketIO.emit("chat1", string + "," + message[1])
         return
 
-    index = move_selection(fen)
+    index = move_selection(fen,newboard)
 
     string = ''
     for x in xrange(0,4):

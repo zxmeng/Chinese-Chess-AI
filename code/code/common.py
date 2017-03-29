@@ -98,9 +98,9 @@ def flip(fen, x, y):
     return x, y
 
 
-def move_selection(fen, ):
-	prediction = fuck.piece_selector_nn(fen)
-    process_piece(prediction,fen)
+def move_selection(fen,newboard):
+    prediction = fuck.piece_selector_nn(fen)
+    process_piece(prediction,fen,fen[100])
     for i in range(precision):
         move[i][0], move[i][1] = get_max(prediction)
         if prediction[move[i][0]][move[i][1]] == 0:
@@ -127,7 +127,7 @@ def move_selection(fen, ):
             prediction_m = fuck_r.move_selector_nn(output)
         pass
         # process prediction
-        move[i][2], move[i][3] = process_move(prediction_m)
+        move[i][2], move[i][3] = get_max(prediction_m)
         move[i][2], move[i][3] = flip(fen, move[i][2], move[i][3])
 
         prediction[temp1][temp2] = 0.0
