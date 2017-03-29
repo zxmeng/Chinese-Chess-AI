@@ -1,86 +1,12 @@
-# origin version of chess, the move will be record by 
-# the text file in the argument 
-
-import random
-import copy
-import os
-import numpy as np
-import time
-from piece_selector import *
-from move_selector import *
-from check import *
+import commmon
 
 import sys
 sys.path.insert(0,'chess2p')
 import chess2p as game2p
 
-# os.environ['TF_CPP_MIN_VLOG_LEVEL']='3'
 
 # the default path is in "qipu"
-
 f=open("../qipu/"+sys.argv[1],"a+")
-
-#for piece selector inorder not to select an empty block
-def process1(prediction,fen):
-#    print prediction
-    for i in range(10):
-	for j in range(9):
-	    temp_r, temp_c = flip(fen, i, j)	
-	    if (fen[temp_r*10+temp_c]=='1'):
-	    	prediction[i][j]=0.0
-#    prediction[prediction<0.001] = 0.0
-    # prediction = np.power(prediction, 2)
-    total = np.sum(prediction)
-    prediction = prediction / total
-
-    rand = np.random.uniform(0,1)
-
-    # temp = np.amax(prediction)
-    temp = 0
-    for i in range(10):
-        for j in range(9):
-            temp += prediction[i][j]
-            temp_r, temp_c = flip(fen, i, j)
-            if (temp >= rand) and (fen[temp_r*10+temp_c]!='1'):
-                return i, j
-
-    temp = np.amax(prediction)
-    for i in range(10):
-        for j in range(9):
-            if (temp == prediction[i][j]):
-                return i, j
-
-def process(prediction):
-#    prediction[prediction<0.001] = 0.0
-    # prediction = np.power(prediction, 2)
-    total = np.sum(prediction)
-    prediction = prediction / total
-
-    rand = np.random.uniform(0,1)
-
-    # temp = np.amax(prediction)
-    temp = 0
-    for i in range(10):
-        for j in range(9):
-            temp += prediction[i][j]
-            if (temp > rand):
-                return i, j
-
-
-def printstat(prediction):
-    temp = np.zeros((10,9))
-    np.set_printoptions(formatter={'float': '{: 0.3f}'.format})
-    for i in range(10):
-        for j in range(9):
-            temp[i][j] = prediction[9-i][8-j]
-            print temp[i]
-
-
-def flip(fen, x, y):
-    if fen[100] =='b':
-        x = 9 - x
-        y = 8 - y
-    return x, y
 
 
 def on_a_response(*args):
@@ -189,55 +115,6 @@ move = np.zeros((3, 4), dtype=np.int)
 
 
 fen = "rnbakabnr/111111111/1c11111c1/p1p1p1p1p/111111111/111111111/P1P1P1P1P/1C11111C1/111111111/RNBAKABNR/r"
-# fen = "111a1ab11/11R111111/111k11111/p11Nn111p/111111111/111111111/111C1111c/111111R11/111111111/11BAKAB11,b"
-# fen = "11bakab11/111111111/11R111111/C111c1111/111111111/111111111/P111Nn11P/11111K111/111111r11/11BA1A111,r"
-#print fen
-# on_a_response(fen)
-
-# the part is for self training
-
-# for x in xrange(1,500):
-#     print x
-#     f.write("Game "+str(x)+"\n")
-#     for i in xrange(1,1000):
-#         fen, win = on_a_response(fen)
-#         # print win
-#         if(win == "r"):
-#             f.write("r wins\n")
-#             # print "r"
-#             print i
-#             break
-#         elif(win == "b"):
-#             f.write("b wins\n")
-#             # print "b"
-#             print i
-#             break
-#         # print fen
-#         pass
-#     fen = "rnbakabnr/111111111/1c11111c1/p1p1p1p1p/111111111/111111111/P1P1P1P1P/1C11111C1/111111111/RNBAKABNR/r"
-#     pass
-
-
-# end of part
-
-# training with 2p
-
-fuck = Fuck()
-fuck.init_piece_selector()
-fuck_a = Fuck_m("a")
-fuck_a.init_move_selector()
-fuck_b = Fuck_m("b")
-fuck_b.init_move_selector()
-fuck_c = Fuck_m("c")
-fuck_c.init_move_selector()
-fuck_k = Fuck_m("k")
-fuck_k.init_move_selector()
-fuck_p = Fuck_m("p")
-fuck_p.init_move_selector()
-fuck_r = Fuck_m("r")
-fuck_r.init_move_selector()
-fuck_n = Fuck_m("n")
-fuck_n.init_move_selector()
 
 
 for x in xrange(1,1000):
