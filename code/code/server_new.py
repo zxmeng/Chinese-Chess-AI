@@ -96,7 +96,7 @@ def on_a_response(*args):
         socketIO.emit("chat1",string+","+message[1])
         return
 
-    prediction = piece_selector_nn(fen)
+    prediction = fuck.piece_selector_nn(fen)
     process1(prediction,fen)
     for i in range(precision):
         move[i][0], move[i][1] = get_max(prediction)
@@ -107,8 +107,22 @@ def on_a_response(*args):
         move[i][0], move[i][1] = flip(fen, move[i][0], move[i][1])
 
         # move selector
-        prediction_m = move_selector_nn(fen, [move[i][0], move[i][1]])
-        printstat(prediction_m)
+        output, piece_type = extract_features_dest(fen, [move[i][0], move[i][1]])
+        if piece_type == "a":
+            prediction_m = fuck_a.move_selector_nn(output)
+        elif piece_type == "b":
+            prediction_m = fuck_b.move_selector_nn(output)
+        elif piece_type == "c":
+            prediction_m = fuck_c.move_selector_nn(output)
+        elif piece_type == "n":
+            prediction_m = fuck_n.move_selector_nn(output)
+        elif piece_type == "k":
+            prediction_m = fuck_k.move_selector_nn(output)
+        elif piece_type == "p":
+            prediction_m = fuck_p.move_selector_nn(output)
+        elif piece_type == "r":
+            prediction_m = fuck_r.move_selector_nn(output)
+        pass
         # process prediction
         move[i][2], move[i][3] = process(prediction_m)
         move[i][2], move[i][3] = flip(fen, move[i][2], move[i][3])
@@ -173,6 +187,23 @@ port = 3001
 socketIO = SocketIO('localhost', port)
 # socketIO.on('chat',on_a_response)
 # socketIO.wait(seconds=10)
+fuck = Fuck()
+fuck.init_piece_selector()
+fuck_a = Fuck_m("a")
+fuck_a.init_move_selector()
+fuck_b = Fuck_m("b")
+fuck_b.init_move_selector()
+fuck_c = Fuck_m("c")
+fuck_c.init_move_selector()
+fuck_k = Fuck_m("k")
+fuck_k.init_move_selector()
+fuck_p = Fuck_m("p")
+fuck_p.init_move_selector()
+fuck_r = Fuck_m("r")
+fuck_r.init_move_selector()
+fuck_n = Fuck_m("n")
+fuck_n.init_move_selector()
+
 
 #chat_namespace = socketIO.define(AA, '/chat')
 while True:
