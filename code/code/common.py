@@ -3,12 +3,18 @@ import copy
 import tensorflow as tf
 import os
 import numpy as np
-from socketIO_client import SocketIO
+# from socketIO_client import SocketIO
 import time
 from piece_selector import *
 from move_selector import *
 from check import *
-from evaluate import *
+import copy as cp
+import ctypes
+import check as ck
+evaluator = ctypes.CDLL('/root/code/example.so')
+# evaluator = ctypes.CDLL('/data/ssd/public/hzzhang5/code/example.so')
+
+# from evaluate import *
 
 piece_b = ['k', 'a', 'b', 'n', 'r', 'c', 'p']
 piece_r = ['K', 'A', 'B', 'N', 'R', 'C', 'P']
@@ -136,3 +142,131 @@ def move_selection(fen,newboard):
     index = eval_move(newboard,move[:i],i,fen[100])
 
     return index
+
+def eval_move(board, move,size,side):
+    score = np.zeros(size)
+    # print "oppo move"
+    # print move
+    for x in xrange(0,size):
+        newboard = cp.deepcopy(board)
+        string = move[x]
+        newboard[int(string[2])][int(string[3])]=newboard[int(string[0])][int(string[1])]
+        newboard[int(string[0])][int(string[1])]='1';
+
+
+        fen=""
+        for i in xrange(0,10):
+            for j in xrange(0,9):
+                fen += newboard[i][j]
+            fen += "/"
+        # fen += side
+        if side=='r':
+            fen += "b"
+        else:
+            fen += 'r'
+            pass
+
+        # print fen
+        isChecked, _ = ck.check(newboard,side)
+        if isChecked == 1:
+            score[x] = -9999
+            continue
+        # evaluator.evaluate.argtypes = [ctypes.c_char_p]
+        # score[x]=evaluator.evaluate(fen)
+        score[x] = eval_minimax(fen,fen[100])
+        # score[x] = evaluate(fen)
+
+
+    index = np.argmax(score)
+    print score
+    print index
+    return index
+
+    pass
+
+def eval_minimax(fen,side):
+    newboard = [[0 for x in range(9)] for y in range(10)]
+    for i in xrange(0,10):
+        for j in xrange(0,9):
+            newboard[i][j] = fen[i*10 + j]
+    if(side == "r"):
+        opp = "b"
+    else:
+        opp = "r"
+    pass
+    temp_move = np.zeros((precision, 4), dtype=np.int)
+    score = move_selection_temp(fen,newboard,temp_move)
+    return score
+
+def move_selection_temp(fen,newboard,move):
+    prediction = fuck.piece_selector_nn(fen)
+    process_piece(prediction,fen,fen[100])
+    for i in range(precision):
+        move[i][0], move[i][1] = get_max(prediction)
+        if prediction[move[i][0]][move[i][1]] == 0:
+            break
+        temp1 = move[i][0]
+        temp2 = move[i][1]
+        move[i][0], move[i][1] = flip(fen, move[i][0], move[i][1])
+
+        # move selector
+        output, piece_type = extract_features_dest(fen, [move[i][0], move[i][1]])
+        if piece_type == "a":
+            prediction_m = fuck_a.move_selector_nn(output)
+        elif piece_type == "b":
+            prediction_m = fuck_b.move_selector_nn(output)
+        elif piece_type == "c":
+            prediction_m = fuck_c.move_selector_nn(output)
+        elif piece_type == "n":
+            prediction_m = fuck_n.move_selector_nn(output)
+        elif piece_type == "k":
+            prediction_m = fuck_k.move_selector_nn(output)
+        elif piece_type == "p":
+            prediction_m = fuck_p.move_selector_nn(output)
+        elif piece_type == "r":
+            prediction_m = fuck_r.move_selector_nn(output)
+        pass
+        # process prediction
+        move[i][2], move[i][3] = get_max(prediction_m)
+        move[i][2], move[i][3] = flip(fen, move[i][2], move[i][3])
+
+        prediction[temp1][temp2] = 0.0
+
+
+    # index = eval_move(newboard,move[:i],i,fen[100])
+
+    move = move[:i]
+    size = i
+    side = fen[100]
+    score = np.zeros(size)
+    # print "prediction move"
+    # print move
+    for x in xrange(0,size):
+        tempboard = cp.deepcopy(newboard)
+        string = move[x]
+        tempboard[int(string[2])][int(string[3])]=tempboard[int(string[0])][int(string[1])]
+        tempboard[int(string[0])][int(string[1])]='1';
+
+
+        fen=""
+        for i in xrange(0,10):
+            for j in xrange(0,9):
+                fen += tempboard[i][j]
+            fen += "/"
+        # fen += side
+        if side=='r':
+            fen += "b"
+        else:
+            fen += 'r'
+            pass
+
+        # print fen
+        isChecked, _ = ck.check(tempboard,side)
+        if isChecked == 1:
+            score[x] = 9999
+            continue
+        evaluator.evaluate.argtypes = [ctypes.c_char_p]
+        score[x]=evaluator.evaluate(fen)
+    # print score
+    # print "score is %d" % np.amin(score)
+    return np.amin(score)

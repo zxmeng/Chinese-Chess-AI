@@ -60,7 +60,7 @@ def on_a_response(*args):
     return fen1, None
 
 
-def minimax_search(chessboard, move, num, side):
+# def minimax_search(chessboard, move, num, side):
 
 
 
