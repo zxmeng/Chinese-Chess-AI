@@ -4,15 +4,16 @@
 # -------------------------------------------------------+
 
 # --------------------------------------------------------------------+
-# Ver 1.0    Mar 13 2017                                              |
+# Ver 2.0    Apr 4 2017                                               |
 # Based on information_ext.py                                         |
 # Author: zxm                                                         |
-# Summary: add function info_ext_eva and update fen_reader and flip   |
+# Summary: extract information for fully connected eva model          |
 # --------------------------------------------------------------------+
 
 
 # format
-# [90 board places] , [player] , [move] (?) , [winning rate]
+# [90 board places] , [player] , [score]
+# evaluate this board state for the player to make a move
 # init_board = "rnbakabnr/111111111/1111c11c1/p1p1p1p1p/111111111/111111111/P1P1P1P1P/1C11111C1/111111111/RNBAKABNR/b,2421,c"
 
 from moveGeneration import *
@@ -20,140 +21,97 @@ from validation import *
 import numpy as np
 import os
 
-piece_b = ['k', 'a', 'b', 'n', 'r', 'c', 'p']
-piece_r = ['K', 'A', 'B', 'N', 'R', 'C', 'P']
+piece_b = ['k', 'r', 'c', 'n', 'b', 'a', 'p']
+piece_r = ['K', 'R', 'C', 'N', 'B', 'A', 'P']
+pieces = ['K', 'R', 'C', 'N', 'B', 'A', 'P', 'k', 'r', 'c', 'n', 'b', 'a', 'p']
+piece_mob = ['R', 'C', 'N', 'r', 'c', 'n']
 piece_list = {'b': piece_b, 'r': piece_r}
 piece_list_op = {'b': piece_r, 'r': piece_b}
+piece_total = {'K': 1, 'R': 2, 'C': 2, 'N': 2, 'B': 2, 'A': 2, 'P': 5, 'k', 'r': 2, 'c': 2, 'n': 2, 'b': 2, 'a': 2, 'p': 5}
 
 
 def fen_reader(fen):
-    # input fen: [chessboard string],x,x,x,x,[type]
+    # input fen: [chessboard string], [player], [score]
     chessboard = [['\0' for c in range(9)] for r in range(10)]
     for r in range(10):
         for c in range(9):
             chessboard[r][c] = fen[r * 10 + c]
+
     player = fen[100]
-    # move = [0 for x in range(4)]
-    # for x in range(4):
-    #     move[x] = int(fen[102 + x])
-    # piece_type = fen[107]
     temp = fen.split(",")
-    w_rate = temp[-1]
-    return chessboard, player, w_rate
+    score = temp[-1]
+    return chessboard, player, score
 
 
-def flip(chessboard, player):
-    # assume player is always the lower side of chessboard, in uppercase
-    # fip the board if player is black
-    if player == 'b':
-        newboard = [['1' for c in range(9)] for r in range(10)]
-        for r in range(10):
-            for c in range(9):
-                if chessboard[9-r][8-c] in piece_b:
-                    newboard[r][c] = chessboard[9-r][8-c].upper()
-                elif chessboard[9-r][8-c] in piece_r:
-                    newboard[r][c] = chessboard[9-r][8-c].lower()
-        return newboard
-    else:
-        return chessboard
+def ext_info_eva_full(fen):
+    dic_count = {p: 0 for p in pieces }
 
+    pl_k = np.zeros((2, 3), dtype=np.int8)
+    pl_r = np.zeros((2, 3), dtype=np.int8)
+    pl_c = np.zeros((2, 3), dtype=np.int8)
+    pl_n = np.zeros((2, 3), dtype=np.int8)
+    pl_b = np.zeros((2, 3), dtype=np.int8)
+    pl_a = np.zeros((2, 3), dtype=np.int8)
+    pl_p = np.zeros((5, 3), dtype=np.int8)
 
-def label_board_side(chessboard):
-    # 1 for player, -1 for opponent, 0 for empty
-    newboard = np.zeros((10, 9), dtype=np.int8)
-    for r in range(10):
-        for c in range(9):
-            if chessboard[r][c] in piece_b:
-                newboard[r][c] = -1
-            elif chessboard[r][c] in piece_r:
-                newboard[r][c] = 1
-    return np.reshape(newboard, 90)
+    pl_K = np.zeros((2, 3), dtype=np.int8)
+    pl_R = np.zeros((2, 3), dtype=np.int8)
+    pl_C = np.zeros((2, 3), dtype=np.int8)
+    pl_N = np.zeros((2, 3), dtype=np.int8)
+    pl_B = np.zeros((2, 3), dtype=np.int8)
+    pl_A = np.zeros((2, 3), dtype=np.int8)
+    pl_P = np.zeros((5, 3), dtype=np.int8)
 
+    dic_pl = {'K': pl_K, 'R': pl_R, 'C': pl_C, 'N': pl_N, 'B': pl_B, 'A': pl_A, 'P': pl_P, 'k': pl_k, 'r': pl_r, 'c': pl_c, 'n': pl_n, 'b': pl_b, 'a': pl_a, 'p': pl_p}
 
-def label_board_type(chessboard, piece_type):
-    # 1 for player, -1 for opponent, 0 for empty
-    newboard = np.zeros((10, 9), dtype=np.int8)
-    for r in range(10):
-        for c in range(9):
-            if chessboard[r][c] == piece_type.lower():
-                newboard[r][c] = -1
-            elif chessboard[r][c] == piece_type.upper():
-                newboard[r][c] = 1
-    # print np.reshape(newboard, 90)
-    return np.reshape(newboard, 90)
+    mob_r = np.zeros((2), dtype=np.float32)
+    mob_c = np.zeros((2), dtype=np.float32)
+    mob_n = np.zeros((2), dtype=np.float32)
+    mob_R = np.zeros((2), dtype=np.float32)
+    mob_C = np.zeros((2), dtype=np.float32)
+    mob_N = np.zeros((2), dtype=np.float32)
 
+    dic_mob = {'R': mob_R, 'C': mob_C, 'N': mob_N, 'r': mob_r, 'c': mob_c, 'n': mob_n}
 
-def label_liberties(chessboard):
-    # positive for player, negative for opponent, 0 for empty
-    newboard = np.zeros((10, 9), dtype=np.int8)
-    for r in range(10):
-        for c in range(9):
-            if chessboard[r][c] in piece_b:
-                newboard[r][c] = -1 * count_movesnum(chessboard, 'b', [r, c])
-            elif chessboard[r][c] in piece_r:
-                newboard[r][c] = count_movesnum(chessboard, 'r', [r, c])
-    return np.reshape(newboard, 90)
+    _chessboard, _player, _score = fen_reader(fen)
 
-
-def label_attack_defend(chessboard):
-    # positive for under defence, negative for under attack
-    newboard = np.zeros((10, 9), dtype=np.int8)
-    for r in range(10):
-        for c in range(9):
-            newboard[r][c] = count_defend(chessboard, 'r', [r, c]) - count_defend(chessboard, 'b', [r, c])
-    return np.reshape(newboard, 90)
-
-
-def label_valid_moves_tile(chessboard, tile):
-    # -1 for invalid moves, 0 for this piece, 1 for valid moves
-    newboard = -1 * np.ones((10, 9), dtype=np.int8)
-    newboard[tile[0]][tile[1]] = 1
-    moves = generatemoves_fortile(chessboard, 'r', tile)
-    for move in moves:
-        newboard[move[2]][move[3]] = 2
-    return np.reshape(newboard, 90)
-
-
-def count_defend(board, player, tile):
-    count = 0
-    flag = 0
-    if board[tile[0]][tile[1]] == '1':
-        board[tile[0]][tile[1]] = piece_list_op[player][-1]
-        flag = 1
-    for r in range(10):
-        for c in range(9):
-            if board[r][c] in piece_list[player]:
-                move = [r, c, tile[0], tile[1]]
-                count += validate(board, move, player)
-    if flag == 1:
-        board[tile[0]][tile[1]] = '1'
-    return count
-
-
-def extract_features_eva(fen):
-    _chessboard, _player, _wrate = fen_reader(fen)
-    _chessboard = flip(_chessboard, _player)
-
-    side_label = label_board_side(_chessboard)
-    # print side_label
-    type_label = np.zeros((7, 90), dtype=np.int8)
-    for x in range(7):
-        ptype = piece_b[x]
-        type_label[x] = label_board_type(_chessboard, ptype)
-
-    liberties_label = label_liberties(_chessboard)
-    atkdfd_label = label_attack_defend(_chessboard)
-
-    chnl_option = {0: side_label, 1: type_label[0], 2: type_label[1], 3: type_label[2], 4: type_label[3],
-                   5: type_label[4], 6: type_label[5], 7: type_label[6], 8: liberties_label, 9: atkdfd_label}
     output = ""
+    if (_player == 'r'):
+        output += '1,'
+    else:
+        output += '-1,'
+
     for r in range(10):
         for c in range(9):
-            for x in range(10):
-                output += str(chnl_option[x][r*9 + c])
+            ptype = _chessboard[r][c]
+            if ptype != '1':
+                count = dic_count[ptype]
+                dic_pl[ptype][count][0] = 1
+                dic_pl[ptype][count][1] = r + 1
+                dic_pl[ptype][count][2] = c + 1
+                if ptype in piece_mob:
+                    dic_mob[ptype][count] = count_mobility(_chessboard, [r, c]) / 4 
+                dic_count[ptype] += 1
+
+    for x in range(14):
+        output += str(dic_count[pieces[x]])
+        output += ','
+
+    for x in range(14):
+        ptype = pieces[x]
+        for i in range(piece_total[ptype]):
+            for j in range(3):
+                output += str(dic_pl[ptype][i][j])
                 output += ','
+
+    for x in range(6):
+        ptype = piece_mob[x]
+        for i in range(piece_total[ptype]):
+            output += str(dic_mob[ptype][i])
+            output += ','
+
     output += '\n'
-    output += _wrate
+    output += _score
     output += '\n'
     return output
 
@@ -203,7 +161,7 @@ def info_ext_eva():
             # line = line.decode("utf-8")
             # print line
             try:
-                output = extract_features_eva(line)
+                output = ext_info_eva_full(line)
                 dt.write(output)
             except:
                 print 'error! ' + line

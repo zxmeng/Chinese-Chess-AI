@@ -552,3 +552,15 @@ def count_movesnum(board, player, tile):
     return count
 
 
+def count_mobility(board, tile):
+    count = 0
+    r = tile[0]
+    c = tile[1]
+    if board[r][c] in piece_b:
+        player == 'b'
+        count = options[board[r][c]](board, r, c, player)
+    elif board[r][c] in piece_r:
+        player == 'r' 
+        count = options[board[r][c].lower()](board, r, c, player)
+    return count
+
