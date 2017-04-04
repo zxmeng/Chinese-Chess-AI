@@ -3,15 +3,14 @@ import copy
 import tensorflow as tf
 import os
 import numpy as np
-import sys
+# from socketIO_client import SocketIO
 import time
-from piece_selector import *
-from move_selector import *
+from piece_selector1 import *
+from move_selector1 import *
 from check import *
 import copy as cp
 import ctypes
 import check as ck
-import data_process
 # evaluator = ctypes.CDLL('/root/code/example.so')
 evaluator = ctypes.CDLL('/data/ssd/public/hzzhang5/code/example.so')
 
@@ -27,22 +26,22 @@ precision = 18
 move = np.zeros((precision, 4), dtype=np.int)
 
 # load NN models
-fuck = Fuck()
-fuck.init_piece_selector()
-fuck_a = Fuck_m("a")
-fuck_a.init_move_selector()
-fuck_b = Fuck_m("b")
-fuck_b.init_move_selector()
-fuck_c = Fuck_m("c")
-fuck_c.init_move_selector()
-fuck_k = Fuck_m("k")
-fuck_k.init_move_selector()
-fuck_p = Fuck_m("p")
-fuck_p.init_move_selector()
-fuck_r = Fuck_m("r")
-fuck_r.init_move_selector()
-fuck_n = Fuck_m("n")
-fuck_n.init_move_selector()
+fuck1 = Fuck1()
+fuck1.init_piece_selector()
+fuck1_a = Fuck1_m("a")
+fuck1_a.init_move_selector()
+fuck1_b = Fuck1_m("b")
+fuck1_b.init_move_selector()
+fuck1_c = Fuck1_m("c")
+fuck1_c.init_move_selector()
+fuck1_k = Fuck1_m("k")
+fuck1_k.init_move_selector()
+fuck1_p = Fuck1_m("p")
+fuck1_p.init_move_selector()
+fuck1_r = Fuck1_m("r")
+fuck1_r.init_move_selector()
+fuck1_n = Fuck1_m("n")
+fuck1_n.init_move_selector()
 
 
 # get max value index from prediction
@@ -106,9 +105,8 @@ def flip(fen, x, y):
 
 
 def move_selection(fen,newboard):
-    prediction = fuck.piece_selector_nn(fen)
+    prediction = fuck1.piece_selector_nn(fen)
     process_piece(prediction,fen,fen[100])
-    print prediction
     for i in range(precision):
         move[i][0], move[i][1] = get_max(prediction)
         if prediction[move[i][0]][move[i][1]] == 0:
@@ -120,19 +118,19 @@ def move_selection(fen,newboard):
         # move selector
         output, piece_type = extract_features_dest(fen, [move[i][0], move[i][1]])
         if piece_type == "a":
-            prediction_m = fuck_a.move_selector_nn(output)
+            prediction_m = fuck1_a.move_selector_nn(output)
         elif piece_type == "b":
-            prediction_m = fuck_b.move_selector_nn(output)
+            prediction_m = fuck1_b.move_selector_nn(output)
         elif piece_type == "c":
-            prediction_m = fuck_c.move_selector_nn(output)
+            prediction_m = fuck1_c.move_selector_nn(output)
         elif piece_type == "n":
-            prediction_m = fuck_n.move_selector_nn(output)
+            prediction_m = fuck1_n.move_selector_nn(output)
         elif piece_type == "k":
-            prediction_m = fuck_k.move_selector_nn(output)
+            prediction_m = fuck1_k.move_selector_nn(output)
         elif piece_type == "p":
-            prediction_m = fuck_p.move_selector_nn(output)
+            prediction_m = fuck1_p.move_selector_nn(output)
         elif piece_type == "r":
-            prediction_m = fuck_r.move_selector_nn(output)
+            prediction_m = fuck1_r.move_selector_nn(output)
         pass
         # process prediction
         move[i][2], move[i][3] = get_max(prediction_m)
@@ -148,15 +146,10 @@ def move_selection(fen,newboard):
 def eval_move(board, move,size,side):
     score = np.zeros(size)
     # print "oppo move"
-    print move
+    # print move
     for x in xrange(0,size):
         newboard = cp.deepcopy(board)
         string = move[x]
-
-        if(validate(board, move[x], side)==0):
-            score[x] = -9999
-            continue
-
         newboard[int(string[2])][int(string[3])]=newboard[int(string[0])][int(string[1])]
         newboard[int(string[0])][int(string[1])]='1';
 
@@ -206,7 +199,7 @@ def eval_minimax(fen,side):
     return score
 
 def move_selection_temp(fen,newboard,move):
-    prediction = fuck.piece_selector_nn(fen)
+    prediction = fuck1.piece_selector_nn(fen)
     process_piece(prediction,fen,fen[100])
     for i in range(precision):
         move[i][0], move[i][1] = get_max(prediction)
@@ -219,19 +212,19 @@ def move_selection_temp(fen,newboard,move):
         # move selector
         output, piece_type = extract_features_dest(fen, [move[i][0], move[i][1]])
         if piece_type == "a":
-            prediction_m = fuck_a.move_selector_nn(output)
+            prediction_m = fuck1_a.move_selector_nn(output)
         elif piece_type == "b":
-            prediction_m = fuck_b.move_selector_nn(output)
+            prediction_m = fuck1_b.move_selector_nn(output)
         elif piece_type == "c":
-            prediction_m = fuck_c.move_selector_nn(output)
+            prediction_m = fuck1_c.move_selector_nn(output)
         elif piece_type == "n":
-            prediction_m = fuck_n.move_selector_nn(output)
+            prediction_m = fuck1_n.move_selector_nn(output)
         elif piece_type == "k":
-            prediction_m = fuck_k.move_selector_nn(output)
+            prediction_m = fuck1_k.move_selector_nn(output)
         elif piece_type == "p":
-            prediction_m = fuck_p.move_selector_nn(output)
+            prediction_m = fuck1_p.move_selector_nn(output)
         elif piece_type == "r":
-            prediction_m = fuck_r.move_selector_nn(output)
+            prediction_m = fuck1_r.move_selector_nn(output)
         pass
         # process prediction
         move[i][2], move[i][3] = get_max(prediction_m)
@@ -277,25 +270,3 @@ def move_selection_temp(fen,newboard,move):
     # print score
     # print "score is %d" % np.amin(score)
     return np.amin(score)
-
-def load_model(init_version):
-
-    fuck.init_piece_selector_with_version(init_version)
-    
-    fuck_a.init_move_selector_with_version(init_version)
-    
-    fuck_b.init_move_selector_with_version(init_version)
-    
-    fuck_c.init_move_selector_with_version(init_version)
-    
-    fuck_k.init_move_selector_with_version(init_version)
-    
-    fuck_p.init_move_selector_with_version(init_version)
-    
-    fuck_r.init_move_selector_with_version(init_version)
-    
-    fuck_n.init_move_selector_with_version(init_version)
-
-    pass
-
-

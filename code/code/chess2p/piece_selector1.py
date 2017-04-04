@@ -16,7 +16,7 @@ def bias_variable(shape):
 def conv2d(x, W):
     return tf.nn.conv2d(x, W, strides=[1, 1, 1, 1], padding='SAME')
 
-class Fuck:
+class Fuck1:
     def __init__(self):
         print " "
 
@@ -68,14 +68,7 @@ class Fuck:
         print self.sess
         with self.sess.as_default():       
             saver = tf.train.Saver()
-            saver.restore(self.sess, '../model/my-model-piece_selector-016')
-
-    def init_piece_selector_with_version(self,version):
-        # self.sess.run(tf.global_variables_initializer())
-        print self.sess
-        with self.sess.as_default():       
-            saver = tf.train.Saver()
-            saver.restore(self.sess, '../model/my-model-piece_selector-' + str(version))
+            saver.restore(self.sess, '../model/my-model-piece_selector-017')
         
     def close_piece_selector(self):
         self.sess.close()

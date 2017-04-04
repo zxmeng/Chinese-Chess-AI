@@ -20,26 +20,55 @@ from information_ext import *
 from update_piece import *
 from update_move import *
 
-if len(sys.argv) != 3:
-	print "Wrong number of arguments!"
-	exit(1)
-else:
-	print "***** Start Training *****"
-	print "Old Version: " + str(sys.argv[1])
-	print "New Version: " + str(sys.argv[2])
-
-
+def process_pgn():
 # --------------------------------------------------------+
 # open source data files and preprocess the data          |
 # get the game results and assign rewards accordingly     |
 # save the processed data to folder processed             |
 # --------------------------------------------------------+
-path = '../source/'
-dt = open("../processed/processed.txt", 'w')
-count = 0
-for filename in os.listdir(path):
-	if filename[0] == '.':
-		continue
+
+	path = '../source/'
+	dt = open("../processed/processed.txt", 'w')
+	count = 0
+	for filename in os.listdir(path):
+		if filename[0] == '.':
+			continue
+		pgn = open(path + filename, 'r')
+		output = ""
+		for line in pgn:
+			count+=1
+			if count%1000 == 0:
+				print count
+			# line = line.decode("utf-8")
+			# print line
+			if "Game" in line:
+				continue
+			elif "wins" in line:
+				winner = line[0]
+				output = output.replace("\n", "," + winner + "\n")
+				dt.write(output)
+				
+				output = ""
+				continue
+			else:
+				output += line
+
+		pgn.close()
+	dt.close()
+	print count
+
+def process_pgn_with_index(fileindex):
+# --------------------------------------------------------+
+# open source data files and preprocess the data          |
+# get the game results and assign rewards accordingly     |
+# save the processed data to folder processed             |
+# --------------------------------------------------------+
+
+	path = '../source/'
+	dt = open("../processed/processed.txt", 'w')
+	count = 0
+	
+	filename = str(fileindex) + '.txt'
 	pgn = open(path + filename, 'r')
 	output = ""
 	for line in pgn:
@@ -61,32 +90,63 @@ for filename in os.listdir(path):
 			output += line
 
 	pgn.close()
-dt.close()
-print count
+	dt.close()
+	print count
+
+if __name__ == "__main__":
+	if len(sys.argv) != 3:
+		print "Wrong number of arguments!"
+		exit(1)
+	else:
+		print "***** Start Training *****"
+		print "Old Version: " + str(sys.argv[1])
+		print "New Version: " + str(sys.argv[2])
+	process_pgn()
+	# --------------------------------------------------------------------+
+	# call information_ext functions to extract pgn info for training     |
+	# extract for piece selector first                                    |
+	# then for different move selectors                                   |
+	# save the extracted info to folder update_xxx                        |
+	# --------------------------------------------------------------------+
+	info_ext_piece()
+	info_ext_move()
 
 
-# --------------------------------------------------------------------+
-# call information_ext functions to extract pgn info for training     |
-# extract for piece selector first                                    |
-# then for different move selectors                                   |
-# save the extracted info to folder update_xxx                        |
-# --------------------------------------------------------------------+
-info_ext_piece()
-info_ext_move()
+	# --------------------------------------------------+
+	# call update functions to train the old models     |
+	# --------------------------------------------------+
+	over = str(sys.argv[1])
+	nver = str(sys.argv[2])
 
+	update_piece_selector(over, nver)
+	update_move_selector("r", over, nver)
+	update_move_selector("c", over, nver)
+	update_move_selector("b", over, nver)
+	update_move_selector("a", over, nver)
+	update_move_selector("n", over, nver)
+	update_move_selector("k", over, nver)
+	update_move_selector("p", over, nver)
 
-# --------------------------------------------------+
-# call update functions to train the old models     |
-# --------------------------------------------------+
-over = str(sys.argv[1])
-nver = str(sys.argv[2])
+def data_process(over,nver,fileindex):
 
-update_piece_selector(over, nver)
-update_move_selector("r", over, nver)
-update_move_selector("c", over, nver)
-update_move_selector("b", over, nver)
-update_move_selector("a", over, nver)
-update_move_selector("n", over, nver)
-update_move_selector("k", over, nver)
-update_move_selector("p", over, nver)
+	process_pgn_with_index(fileindex)
+	# --------------------------------------------------------------------+
+	# call information_ext functions to extract pgn info for training     |
+	# extract for piece selector first                                    |
+	# then for different move selectors                                   |
+	# save the extracted info to folder update_xxx                        |
+	# --------------------------------------------------------------------+
+	info_ext_piece()
+	info_ext_move()
 
+	# --------------------------------------------------+
+	# call update functions to train the old models     |
+	# --------------------------------------------------+
+	update_piece_selector(over, nver)
+	update_move_selector("r", over, nver)
+	update_move_selector("c", over, nver)
+	update_move_selector("b", over, nver)
+	update_move_selector("a", over, nver)
+	update_move_selector("n", over, nver)
+	update_move_selector("k", over, nver)
+	update_move_selector("p", over, nver)

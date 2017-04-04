@@ -4,10 +4,7 @@ import sys
 sys.path.insert(0,'chess2p')
 import chess2p as game2p
 
-
-# the default path is in "qipu"
 f=open("../qipu/" + sys.argv[1],"a+")
-
 
 def on_a_response(*args):
     # get fen
@@ -63,30 +60,51 @@ def on_a_response(*args):
 # def minimax_search(chessboard, move, num, side):
 
 
-
-fen = "rnbakabnr/111111111/1c11111c1/p1p1p1p1p/111111111/111111111/P1P1P1P1P/1C11111C1/111111111/RNBAKABNR/r"
-
-
-for x in xrange(1,1000):
-    print x
-    f.write("Game "+str(x)+"\n")
-    for i in xrange(1,1000):
-        if(i%2==1):
-            fen, win = on_a_response(fen)
-        else:
-            fen, win = game2p.on_a_response(fen)
-        # print win
-        if(win == "r"):
-            f.write("r wins\n")
-            # print "r"
-            print i
-            break
-        elif(win == "b"):
-            f.write("b wins\n")
-            # print "b"
-            print i
-            break
-        # print fen
-        pass
+def chess_loop(times,filename):
+    f=open("../source/" + filename,"a+")
     fen = "rnbakabnr/111111111/1c11111c1/p1p1p1p1p/111111111/111111111/P1P1P1P1P/1C11111C1/111111111/RNBAKABNR/r"
-    pass
+
+    for x in xrange(1,times+1):
+        print x
+        f.write("Game "+str(x)+"\n")
+        for i in xrange(1,1000):
+            if(i%2==1):
+                fen, win = on_a_response(fen)
+            else:
+                fen, win = game2p.on_a_response(fen)
+            # print win
+            if(win == "r"):
+                f.write("r wins\n")
+                # print "r"
+                print i
+                break
+            elif(win == "b"):
+                f.write("b wins\n")
+                # print "b"
+                print i
+                break
+            # print fen
+            pass
+        fen = "rnbakabnr/111111111/1c11111c1/p1p1p1p1p/111111111/111111111/P1P1P1P1P/1C11111C1/111111111/RNBAKABNR/r"
+        pass
+
+# if __name__ == "__main__":
+   
+#     # the default path is in "qipu"
+#     # f=open("../qipu/" + sys.argv[1],"a+")
+#     chess_loop(1000,sys.argv[1])
+
+if __name__ == '__main__':
+    
+    init_version = sys.argv[1]
+    new_version = int(init_version) + 1
+    fileindex = 0
+    while fileindex<100:
+        chess_loop(1000,str(fileindex)+".txt")
+        # if(fileindex%10 == 9):
+        data_process(str(init_version),str(new_version),fileindex)
+        init_version = new_version
+        load_model(str(init_version))
+        new_version = new_version + 1
+        fileindex = fileindex + 1
+        pass

@@ -16,7 +16,7 @@ def bias_variable(shape):
 def conv2d(x, W):
     return tf.nn.conv2d(x, W, strides=[1, 1, 1, 1], padding='SAME')
 
-class Fuck_m:
+class Fuck1_m:
     def __init__(self, piece_type):
         self.piece_type =  piece_type
 
@@ -63,15 +63,6 @@ class Fuck_m:
             saver = tf.train.Saver() 
             saver.restore(self.sess_m, '../model/my-model-' + self.piece_type + "-017")
             print tf.get_default_session()
-
-    def init_move_selector_with_version(self,version):
-
-        # sess_m.run(tf.global_variables_initializer())
-        with self.sess_m.as_default(): 
-            saver = tf.train.Saver() 
-            saver.restore(self.sess_m, '../model/my-model-' + self.piece_type + "-" + str(version))
-            print tf.get_default_session()
-
 
     def close_move_selector(self):
         self.sess_m.close()
