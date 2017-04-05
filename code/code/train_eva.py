@@ -94,6 +94,7 @@ def update_piece_selector():
             if count%3 == 0:
                 feature[(count%batch)/2] = line[0:-2].split(',')
             elif count%3 == 1:
+
                 w_rate[(count%batch)/2] = int(line)
 
             if count % 10000 == 9999:

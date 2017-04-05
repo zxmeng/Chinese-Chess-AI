@@ -27,7 +27,7 @@ pieces = ['K', 'R', 'C', 'N', 'B', 'A', 'P', 'k', 'r', 'c', 'n', 'b', 'a', 'p']
 piece_mob = ['R', 'C', 'N', 'r', 'c', 'n']
 piece_list = {'b': piece_b, 'r': piece_r}
 piece_list_op = {'b': piece_r, 'r': piece_b}
-piece_total = {'K': 1, 'R': 2, 'C': 2, 'N': 2, 'B': 2, 'A': 2, 'P': 5, 'k', 'r': 2, 'c': 2, 'n': 2, 'b': 2, 'a': 2, 'p': 5}
+piece_total = {'K': 1, 'R': 2, 'C': 2, 'N': 2, 'B': 2, 'A': 2, 'P': 5, 'k': 1, 'r': 2, 'c': 2, 'n': 2, 'b': 2, 'a': 2, 'p': 5}
 
 
 def fen_reader(fen):
@@ -46,7 +46,7 @@ def fen_reader(fen):
 def ext_info_eva_full(fen):
     dic_count = {p: 0 for p in pieces }
 
-    pl_k = np.zeros((2, 3), dtype=np.int8)
+    pl_k = np.zeros((1, 3), dtype=np.int8)
     pl_r = np.zeros((2, 3), dtype=np.int8)
     pl_c = np.zeros((2, 3), dtype=np.int8)
     pl_n = np.zeros((2, 3), dtype=np.int8)
@@ -54,7 +54,7 @@ def ext_info_eva_full(fen):
     pl_a = np.zeros((2, 3), dtype=np.int8)
     pl_p = np.zeros((5, 3), dtype=np.int8)
 
-    pl_K = np.zeros((2, 3), dtype=np.int8)
+    pl_K = np.zeros((1, 3), dtype=np.int8)
     pl_R = np.zeros((2, 3), dtype=np.int8)
     pl_C = np.zeros((2, 3), dtype=np.int8)
     pl_N = np.zeros((2, 3), dtype=np.int8)
@@ -192,3 +192,6 @@ def info_ext_eva():
 #             print 'error! ' + line
 #     pgn.close()
 # dt.close()
+
+if __name__ == '__main__':
+    info_ext_eva()

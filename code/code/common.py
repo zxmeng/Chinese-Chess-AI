@@ -12,8 +12,9 @@ import copy as cp
 import ctypes
 import check as ck
 import data_process
-# evaluator = ctypes.CDLL('/root/code/example.so')
-evaluator = ctypes.CDLL('/data/ssd/public/hzzhang5/code/example.so')
+import train_eva_full
+evaluator = ctypes.CDLL('/root/code/example.so')
+# evaluator = ctypes.CDLL('/data/ssd/public/hzzhang5/code/example.so')
 
 # from evaluate import *
 
@@ -43,6 +44,8 @@ fuck_r = Fuck_m("r")
 fuck_r.init_move_selector()
 fuck_n = Fuck_m("n")
 fuck_n.init_move_selector()
+evaluator_nn = train_eva_full.Eval_model()
+evaluator_nn.init_evaluator()
 
 
 # get max value index from prediction
@@ -181,6 +184,7 @@ def eval_move(board, move,size,side):
         # evaluator.evaluate.argtypes = [ctypes.c_char_p]
         # score[x]=evaluator.evaluate(fen)
         score[x] = eval_minimax(fen,fen[100])
+        # score[x] = evaluator_nn.evaluate(fen)
         # score[x] = evaluate(fen)
 
 
@@ -273,7 +277,8 @@ def move_selection_temp(fen,newboard,move):
             score[x] = 9999
             continue
         evaluator.evaluate.argtypes = [ctypes.c_char_p]
-        score[x]=evaluator.evaluate(fen)
+        # score[x]=evaluator.evaluate(fen)
+        score[x] = evaluator_nn.evaluate(fen)
     # print score
     # print "score is %d" % np.amin(score)
     return np.amin(score)
@@ -297,5 +302,4 @@ def load_model(init_version):
     fuck_n.init_move_selector_with_version(init_version)
 
     pass
-
 
