@@ -232,14 +232,17 @@ def eval_minimax(fen,side,depth):
     return score
 
 def move_selection_temp(fen, newboard, move, depth):
+
     prediction = fuck.piece_selector_nn(fen)
     process_piece(prediction,fen,fen[100])
+
     for i in range(precision):
+        
         move[i][0], move[i][1] = get_max(prediction)
         if prediction[move[i][0]][move[i][1]] == 0:
             break
-        temp1 = move[i][0]
-        temp2 = move[i][1]
+        temp0 = move[i][0]
+        temp1 = move[i][1]
         move[i][0], move[i][1] = flip(fen, move[i][0], move[i][1])
 
         # move selector
@@ -259,12 +262,25 @@ def move_selection_temp(fen, newboard, move, depth):
         elif piece_type == "r":
             prediction_m = fuck_r.move_selector_nn(output)
         pass
+
         # process prediction
-        move[i][2], move[i][3] = get_max(prediction_m)
-        move[i][2], move[i][3] = flip(fen, move[i][2], move[i][3])
+        for j in range(4):
+            move[i+j][0] = move[i][0]
+            move[i+j][1] = move[i][1]
+            # process prediction
+            move[i+j][2], move[i+j][3] = get_max(prediction_m)
+            if prediction_m[move[i+j][2]][move[i+j][3]] == 0:
+                j -= 1
+                break
+            temp2 = move[i+j][2]
+            temp3 = move[i+j][3]
+            move[i+j][2], move[i+j][3] = flip(fen, move[i+j][2], move[i+j][3])
 
-        prediction[temp1][temp2] = 0.0
+            prediction_m[temp2][temp3] = 0.0
 
+        i += j
+
+        prediction[temp0][temp1] = 0.0
 
     # index = eval_move(newboard,move[:i],i,fen[100])
 
