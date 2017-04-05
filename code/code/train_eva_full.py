@@ -20,7 +20,7 @@ def bias_variable(shape, name):
     initial = tf.zeros(shape=shape)
     return tf.Variable(initial, name=name)
 
-class Eval_model(object):
+class Eval_model:
     def __init__(self):
         input_layer = 123
         hidden_layer_1 = 256

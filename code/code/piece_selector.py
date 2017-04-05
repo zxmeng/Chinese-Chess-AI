@@ -65,20 +65,23 @@ class Fuck:
 
     def init_piece_selector(self):
         # self.sess.run(tf.global_variables_initializer())
-        print self.sess
+        # print self.sess
         with self.sess.as_default():       
             saver = tf.train.Saver()
             saver.restore(self.sess, '../model/my-model-piece_selector-016')
 
     def init_piece_selector_with_version(self,version):
         # self.sess.run(tf.global_variables_initializer())
-        print self.sess
+        # print self.sess
+        self.sess.run(tf.initialize_all_variables())
         with self.sess.as_default():       
             saver = tf.train.Saver()
             saver.restore(self.sess, '../model/my-model-piece_selector-' + str(version))
         
     def close_piece_selector(self):
-        self.sess.close()
+        with self.sess.as_default():
+            tf.reset_default_graph()
+            self.sess.close()
 
     def piece_selector_nn(self, fen):
         output = extract_features_piece(fen)

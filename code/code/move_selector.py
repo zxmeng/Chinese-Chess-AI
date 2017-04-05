@@ -70,11 +70,13 @@ class Fuck_m:
         with self.sess_m.as_default(): 
             saver = tf.train.Saver() 
             saver.restore(self.sess_m, '../model/my-model-' + self.piece_type + "-" + str(version))
-            print tf.get_default_session()
+            # print tf.get_default_session()
 
 
     def close_move_selector(self):
-        self.sess_m.close()
+        with self.sess_m.as_default(): 
+            tf.reset_default_graph()
+            self.sess_m.close()
 
     def move_selector_nn(self, output):
         feature = np.zeros((1, 810))

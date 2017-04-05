@@ -13,6 +13,9 @@ import ctypes
 import check as ck
 import data_process
 import train_eva_full
+
+
+
 evaluator = ctypes.CDLL('/root/code/example.so')
 # evaluator = ctypes.CDLL('/data/ssd/public/hzzhang5/code/example.so')
 
@@ -27,7 +30,9 @@ piece_list_op = {'b': piece_r, 'r': piece_b}
 precision = 18
 move = np.zeros((precision, 4), dtype=np.int)
 
-# load NN models
+# # load NN models
+# evaluator_nn = train_eva_full.Eval_model()
+# evaluator_nn.init_evaluator()
 fuck = Fuck()
 fuck.init_piece_selector()
 fuck_a = Fuck_m("a")
@@ -44,8 +49,6 @@ fuck_r = Fuck_m("r")
 fuck_r.init_move_selector()
 fuck_n = Fuck_m("n")
 fuck_n.init_move_selector()
-evaluator_nn = train_eva_full.Eval_model()
-evaluator_nn.init_evaluator()
 
 
 # get max value index from prediction
@@ -108,10 +111,10 @@ def flip(fen, x, y):
     return x, y
 
 
-def move_selection(fen,newboard):
+def move_selection(fen, newboard):
     prediction = fuck.piece_selector_nn(fen)
     process_piece(prediction,fen,fen[100])
-    print prediction
+    # print prediction
     for i in range(precision):
         move[i][0], move[i][1] = get_max(prediction)
         if prediction[move[i][0]][move[i][1]] == 0:
@@ -144,20 +147,25 @@ def move_selection(fen,newboard):
         prediction[temp1][temp2] = 0.0
 
 
-    index = eval_move(newboard,move[:i],i,fen[100])
+    index = eval_move(newboard, move[:i], i, fen[100])
 
     return index
 
-def eval_move(board, move,size,side):
+def eval_move(board, move, size, side):
     score = np.zeros(size)
+    depth = 3
     # print "oppo move"
     print move
     for x in xrange(0,size):
+        # execute the move
         newboard = cp.deepcopy(board)
         string = move[x]
 
         if(validate(board, move[x], side)==0):
-            score[x] = -9999
+            if (depth%2 == 0):
+                score[x] = 9999
+            else:
+                score[x] = -9999
             continue
 
         newboard[int(string[2])][int(string[3])]=newboard[int(string[0])][int(string[1])]
@@ -177,39 +185,39 @@ def eval_move(board, move,size,side):
             pass
 
         # print fen
-        isChecked, _ = ck.check(newboard,side)
+        isChecked, _ = ck.check(newboard, side)
         if isChecked == 1:
-            score[x] = -9999
+            if (depth%2 == 0):
+                score[x] = 9999
+            else:
+                score[x] = -9999
             continue
         # evaluator.evaluate.argtypes = [ctypes.c_char_p]
         # score[x]=evaluator.evaluate(fen)
-        score[x] = eval_minimax(fen,fen[100])
+        score[x] = eval_minimax(fen, fen[100], depth)
         # score[x] = evaluator_nn.evaluate(fen)
         # score[x] = evaluate(fen)
-
-
-    index = np.argmax(score)
+    if (depth%2 == 0):
+        index = np.argmin(score)
+    else:
+        index = np.argmax(score)
     print score
-    print index
+    # print index
     return index
 
     pass
 
-def eval_minimax(fen,side):
+def eval_minimax(fen,side,depth):
     newboard = [[0 for x in range(9)] for y in range(10)]
     for i in xrange(0,10):
         for j in xrange(0,9):
             newboard[i][j] = fen[i*10 + j]
-    if(side == "r"):
-        opp = "b"
-    else:
-        opp = "r"
-    pass
+
     temp_move = np.zeros((precision, 4), dtype=np.int)
-    score = move_selection_temp(fen,newboard,temp_move)
+    score = move_selection_temp(fen, newboard, temp_move, depth)
     return score
 
-def move_selection_temp(fen,newboard,move):
+def move_selection_temp(fen, newboard, move, depth):
     prediction = fuck.piece_selector_nn(fen)
     process_piece(prediction,fen,fen[100])
     for i in range(precision):
@@ -272,33 +280,67 @@ def move_selection_temp(fen,newboard,move):
             pass
 
         # print fen
-        isChecked, _ = ck.check(tempboard,side)
-        if isChecked == 1:
-            score[x] = 9999
+        isChecked, _ = ck.check(tempboard, side)
+        if (isChecked == 1):
+            if (depth%2 == 0):
+                score[x] = -9999
+            else:
+                score[x] = 9999
             continue
-        evaluator.evaluate.argtypes = [ctypes.c_char_p]
-        # score[x]=evaluator.evaluate(fen)
-        score[x] = evaluator_nn.evaluate(fen)
+        if (depth == 1): 
+            evaluator.evaluate.argtypes = [ctypes.c_char_p]
+            score[x] = evaluator.evaluate(fen)
+            # score[x] = evaluator_nn.evaluate(fen)
+        else:
+            score[x] = eval_minimax(fen, fen[100], depth-1)
     # print score
     # print "score is %d" % np.amin(score)
-    return np.amin(score)
+    if (depth%2 == 0):
+        return np.amax(score)
+    else:
+        return np.amin(score)
 
 def load_model(init_version):
+    global fuck
+    global fuck_a
+    global fuck_b
+    global fuck_c
+    global fuck_k
+    global fuck_p
+    global fuck_r
+    global fuck_n
 
+    fuck_n.close_move_selector()
+    fuck_r.close_move_selector()
+    fuck_p.close_move_selector()
+    fuck_k.close_move_selector()
+    fuck_c.close_move_selector()
+    fuck_b.close_move_selector()
+    fuck_a.close_move_selector()
+    fuck.close_piece_selector()
+
+    fuck = Fuck()
     fuck.init_piece_selector_with_version(init_version)
-    
+
+    fuck_a = Fuck_m("a")
     fuck_a.init_move_selector_with_version(init_version)
-    
+
+    fuck_b = Fuck_m("b")
     fuck_b.init_move_selector_with_version(init_version)
-    
+
+    fuck_c = Fuck_m("c")
     fuck_c.init_move_selector_with_version(init_version)
     
+    fuck_k = Fuck_m("p")
     fuck_k.init_move_selector_with_version(init_version)
-    
+
+    fuck_p = Fuck_m("p")
     fuck_p.init_move_selector_with_version(init_version)
-    
+
+    fuck_r = Fuck_m("r")
     fuck_r.init_move_selector_with_version(init_version)
-    
+
+    fuck_n = Fuck_m("n")
     fuck_n.init_move_selector_with_version(init_version)
 
     pass

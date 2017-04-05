@@ -26,7 +26,7 @@ def on_a_response(*args):
         opp = "r"
 
     # detect whether being checked
-    checkflag,tempmove = check(newboard,opp)
+    checkflag,tempmove = check(newboard, opp)
     if(checkflag == 1):
         string = ''
         for x in xrange(0,4):
@@ -35,7 +35,7 @@ def on_a_response(*args):
         f.write(string + "," + fen[tempmove[0]*10 + tempmove[1]] + "\n")
         return None, fen[100]
 
-    index = move_selection(fen,newboard)
+    index = move_selection(fen, newboard)
 
     string = ''
     for x in xrange(0,4):
