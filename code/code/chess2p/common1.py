@@ -1,8 +1,8 @@
 import numpy as np
 # from socketIO_client import SocketIO
 import time
-from piece_selector import *
-from move_selector import *
+from piece_selector1 import *
+from move_selector1 import *
 from check import *
 import copy as cp
 import ctypes
@@ -23,21 +23,21 @@ move = np.zeros((precision, 4), dtype=np.int)
 
 # load NN models
 init_v = "001"
-fuck1 = Fuck()
+fuck1 = Fuck1()
 fuck1.init_piece_selector_with_version(init_v)
-fuck1_a = Fuck_m("a")
+fuck1_a = Fuck1_m("a")
 fuck1_a.init_move_selector_with_version(init_v)
-fuck1_b = Fuck_m("b")
+fuck1_b = Fuck1_m("b")
 fuck1_b.init_move_selector_with_version(init_v)
-fuck1_c = Fuck_m("c")
+fuck1_c = Fuck1_m("c")
 fuck1_c.init_move_selector_with_version(init_v)
-fuck1_k = Fuck_m("k")
+fuck1_k = Fuck1_m("k")
 fuck1_k.init_move_selector_with_version(init_v)
-fuck1_p = Fuck_m("p")
+fuck1_p = Fuck1_m("p")
 fuck1_p.init_move_selector_with_version(init_v)
-fuck1_r = Fuck_m("r")
+fuck1_r = Fuck1_m("r")
 fuck1_r.init_move_selector_with_version(init_v)
-fuck1_n = Fuck_m("n")
+fuck1_n = Fuck1_m("n")
 fuck1_n.init_move_selector_with_version(init_v)
 
 

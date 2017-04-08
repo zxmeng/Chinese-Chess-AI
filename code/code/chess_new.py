@@ -1,8 +1,10 @@
-from common import *
-
 import sys
 sys.path.insert(0,'chess2p')
 import chess2p as game2p
+from common import *
+
+
+
 
 f=open("../qipu/" + sys.argv[1],"a+")
 
@@ -68,9 +70,10 @@ def chess_loop(times, filename, randomness):
     fen = "rnbakabnr/111111111/1c11111c1/p1p1p1p1p/111111111/111111111/P1P1P1P1P/1C11111C1/111111111/RNBAKABNR/r"
 
     for x in xrange(1, times + 1):
+        print "******************************************************************"
         print "Game " + str(x)
         f.write("Game " + str(x) + "\n")
-        for i in xrange(1,1000):
+        for i in xrange(1, 250):
             if(i%2==1):
                 fen, win = on_a_response(fen, randomness)
             else:

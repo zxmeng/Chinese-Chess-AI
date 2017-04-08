@@ -73,7 +73,7 @@ class Fuck:
     def init_piece_selector_with_version(self,version):
         # self.sess.run(tf.global_variables_initializer())
         # print self.sess
-        self.sess.run(tf.initialize_all_variables())
+        # self.sess.run(tf.initialize_all_variables())
         with self.sess.as_default():       
             saver = tf.train.Saver()
             saver.restore(self.sess, '../model/my-model-piece_selector-' + str(version))
