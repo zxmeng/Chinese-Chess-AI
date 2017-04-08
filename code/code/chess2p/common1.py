@@ -1,7 +1,3 @@
-import random
-import copy
-import tensorflow as tf
-import os
 import numpy as np
 # from socketIO_client import SocketIO
 import time
@@ -104,15 +100,19 @@ def flip(fen, x, y):
     return x, y
 
 
-def move_selection(fen,newboard):
+def move_selection(fen, newboard):
+
     prediction = fuck1.piece_selector_nn(fen)
     process_piece(prediction,fen,fen[100])
-    for i in range(precision):
+    # print prediction
+    i = 0
+    while (i < precision):
+
         move[i][0], move[i][1] = get_max(prediction)
         if prediction[move[i][0]][move[i][1]] == 0:
             break
-        temp1 = move[i][0]
-        temp2 = move[i][1]
+        temp0 = move[i][0]
+        temp1 = move[i][1]
         move[i][0], move[i][1] = flip(fen, move[i][0], move[i][1])
 
         # move selector
@@ -132,27 +132,55 @@ def move_selection(fen,newboard):
         elif piece_type == "r":
             prediction_m = fuck1_r.move_selector_nn(output)
         pass
-        # process prediction
-        move[i][2], move[i][3] = get_max(prediction_m)
-        move[i][2], move[i][3] = flip(fen, move[i][2], move[i][3])
 
-        prediction[temp1][temp2] = 0.0
+        # print prediction_m
+        process_move(prediction_m)
+        for j in range(4):
+            if (i+j+1 >= precision):
+                break
 
+            move[i+j][0] = move[i][0]
+            move[i+j][1] = move[i][1]
+            # process prediction
+            move[i+j][2], move[i+j][3] = get_max(prediction_m)
+            # print prediction_m[move[i+j][2]][move[i+j][3]]
+            if prediction_m[move[i+j][2]][move[i+j][3]] == 0:
+                j -= 1
+                break
+            temp2 = move[i+j][2]
+            temp3 = move[i+j][3]
+            move[i+j][2], move[i+j][3] = flip(fen, move[i+j][2], move[i+j][3])
 
-    index = eval_move(newboard,move[:i],i,fen[100])
+            prediction_m[temp2][temp3] = 0.0
+
+        i = i + j
+        i = i + 1
+        # print "i = %d" % i
+        prediction[temp0][temp1] = 0.0
+    # print "i = %d" % i
+    index = eval_move(newboard, move[:i], i, fen[100])
 
     return index
 
-def eval_move(board, move,size,side):
+def eval_move(board, move, size, side):
     score = np.zeros(size)
+    depth = 1
     # print "oppo move"
     # print move
     for x in xrange(0,size):
+        # execute the move
         newboard = cp.deepcopy(board)
         string = move[x]
+
+        if(validate(board, move[x], side)==0):
+            if (depth%2 == 0):
+                score[x] = 99999
+            else:
+                score[x] = -99999
+            continue
+
         newboard[int(string[2])][int(string[3])]=newboard[int(string[0])][int(string[1])]
         newboard[int(string[0])][int(string[1])]='1';
-
 
         fen=""
         for i in xrange(0,10):
@@ -167,46 +195,49 @@ def eval_move(board, move,size,side):
             pass
 
         # print fen
-        isChecked, _ = ck.check(newboard,side)
+        isChecked, _ = ck.check(newboard, side)
         if isChecked == 1:
-            score[x] = -9999
+            if (depth%2 == 0):
+                score[x] = 10001
+            else:
+                score[x] = -10001
             continue
         # evaluator.evaluate.argtypes = [ctypes.c_char_p]
         # score[x]=evaluator.evaluate(fen)
-        score[x] = eval_minimax(fen,fen[100])
+        score[x] = eval_minimax(fen, fen[100], depth)
+        # score[x] = evaluator_nn.evaluate(fen)
         # score[x] = evaluate(fen)
-
-
-    index = np.argmax(score)
-    print score
-    print index
+    if (depth%2 == 0):
+        index = np.argmin(score)
+    else:
+        index = np.argmax(score)
+    # print score
+    # print index
     return index
 
-    pass
 
-def eval_minimax(fen,side):
+def eval_minimax(fen, side, depth):
     newboard = [[0 for x in range(9)] for y in range(10)]
     for i in xrange(0,10):
         for j in xrange(0,9):
             newboard[i][j] = fen[i*10 + j]
-    if(side == "r"):
-        opp = "b"
-    else:
-        opp = "r"
-    pass
-    temp_move = np.zeros((precision, 4), dtype=np.int)
-    score = move_selection_temp(fen,newboard,temp_move)
-    return score
 
-def move_selection_temp(fen,newboard,move):
+    move = np.zeros((precision, 4), dtype=np.int)
+    # score = move_selection_temp(fen, newboard, temp_move, depth)
+    # return score
+    # def move_selection_temp(fen, newboard, move, depth):
+
     prediction = fuck1.piece_selector_nn(fen)
-    process_piece(prediction,fen,fen[100])
-    for i in range(precision):
+    process_piece(prediction, fen, fen[100])
+
+    i = 0
+    while( i < precision):
+        
         move[i][0], move[i][1] = get_max(prediction)
         if prediction[move[i][0]][move[i][1]] == 0:
             break
-        temp1 = move[i][0]
-        temp2 = move[i][1]
+        temp0 = move[i][0]
+        temp1 = move[i][1]
         move[i][0], move[i][1] = flip(fen, move[i][0], move[i][1])
 
         # move selector
@@ -226,12 +257,28 @@ def move_selection_temp(fen,newboard,move):
         elif piece_type == "r":
             prediction_m = fuck1_r.move_selector_nn(output)
         pass
+
+        process_move(prediction_m)
         # process prediction
-        move[i][2], move[i][3] = get_max(prediction_m)
-        move[i][2], move[i][3] = flip(fen, move[i][2], move[i][3])
+        for j in range(4):
+            if (i+j+1 >= precision):
+                break
+            move[i+j][0] = move[i][0]
+            move[i+j][1] = move[i][1]
+            # process prediction
+            move[i+j][2], move[i+j][3] = get_max(prediction_m)
+            if prediction_m[move[i+j][2]][move[i+j][3]] == 0:
+                break
+            temp2 = move[i+j][2]
+            temp3 = move[i+j][3]
+            move[i+j][2], move[i+j][3] = flip(fen, move[i+j][2], move[i+j][3])
 
-        prediction[temp1][temp2] = 0.0
+            prediction_m[temp2][temp3] = 0.0
 
+        i = i + j
+        i = i + 1
+
+        prediction[temp0][temp1] = 0.0
 
     # index = eval_move(newboard,move[:i],i,fen[100])
 
@@ -247,6 +294,12 @@ def move_selection_temp(fen,newboard,move):
         tempboard[int(string[2])][int(string[3])]=tempboard[int(string[0])][int(string[1])]
         tempboard[int(string[0])][int(string[1])]='1';
 
+        if(validate(newboard, move[x], side) == 0):
+            if (depth%2 == 0):
+                score[x] = -99999
+            else:
+                score[x] = 99999
+            continue
 
         fen=""
         for i in xrange(0,10):
@@ -261,12 +314,22 @@ def move_selection_temp(fen,newboard,move):
             pass
 
         # print fen
-        isChecked, _ = ck.check(tempboard,side)
-        if isChecked == 1:
-            score[x] = 9999
+        isChecked, _ = ck.check(tempboard, side)
+        if (isChecked == 1):
+            if (depth%2 == 0):
+                score[x] = -10001
+            else:
+                score[x] = 10001
             continue
-        evaluator.evaluate.argtypes = [ctypes.c_char_p]
-        score[x]=evaluator.evaluate(fen)
+        if (depth == 1): 
+            evaluator.evaluate.argtypes = [ctypes.c_char_p]
+            score[x] = evaluator.evaluate(fen)
+            # score[x] = evaluator_nn.evaluate(fen)
+        else:
+            score[x] = eval_minimax(fen, fen[100], depth-1)
     # print score
     # print "score is %d" % np.amin(score)
-    return np.amin(score)
+    if (depth%2 == 0):
+        return np.amax(score)
+    else:
+        return np.amin(score)

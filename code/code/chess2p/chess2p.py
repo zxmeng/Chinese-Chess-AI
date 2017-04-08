@@ -1,4 +1,4 @@
-# from common import *
+from common1 import *
 
 def on_a_response(*args):
     # get fen
