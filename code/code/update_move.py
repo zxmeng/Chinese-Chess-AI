@@ -123,3 +123,4 @@ def update_move_selector(piece_type, over, nver):
         saver.save(sess, '../model/my-model-' + piece_type + '-' + nver)
         print count
 
+    sess.close()

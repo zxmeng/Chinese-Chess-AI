@@ -120,3 +120,5 @@ def update_piece_selector(over, nver):
         saver.save(sess, '../model/my-model-piece_selector-' + nver)
         print count
 
+    sess.close()
+

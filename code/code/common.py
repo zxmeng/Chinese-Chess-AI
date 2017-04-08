@@ -177,7 +177,7 @@ def eval_move(board, move, size, side):
     score = np.zeros(size)
     depth = 1
     # print "oppo move"
-    print move
+    # print move
     for x in xrange(0,size):
         # execute the move
         newboard = cp.deepcopy(board)
@@ -222,7 +222,7 @@ def eval_move(board, move, size, side):
         index = np.argmin(score)
     else:
         index = np.argmax(score)
-    print score
+    # print score
     # print index
     return index
 

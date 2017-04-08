@@ -8,6 +8,7 @@ f=open("../qipu/" + sys.argv[1],"a+")
 
 def on_a_response(*args):
     # get fen
+    global f
     fen = args[0]
     f.write(args[0])
     f.write(",")
@@ -61,6 +62,7 @@ def on_a_response(*args):
 
 
 def chess_loop(times,filename):
+    global f
     f=open("../source/" + filename,"a+")
     fen = "rnbakabnr/111111111/1c11111c1/p1p1p1p1p/111111111/111111111/P1P1P1P1P/1C11111C1/111111111/RNBAKABNR/r"
 
@@ -102,7 +104,7 @@ if __name__ == '__main__':
     while fileindex<100:
         chess_loop(1000,str(fileindex)+".txt")
         # if(fileindex%10 == 9):
-        data_process(str(init_version),str(new_version),fileindex)
+        data_process.data_process(str(init_version),str(new_version),fileindex)
         init_version = new_version
         load_model(str(init_version))
         new_version = new_version + 1
