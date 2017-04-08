@@ -61,7 +61,7 @@ class Fuck1_m:
         # sess_m.run(tf.global_variables_initializer())
         with self.sess_m.as_default(): 
             saver = tf.train.Saver() 
-            saver.restore(self.sess_m, '../model/my-model-' + self.piece_type + "-017")
+            saver.restore(self.sess_m, '../model/my-model-' + self.piece_type + "-001")
             print tf.get_default_session()
 
     def close_move_selector(self):

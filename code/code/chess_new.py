@@ -12,6 +12,7 @@ def on_a_response(*args):
     fen = args[0]
     f.write(args[0])
     f.write(",")
+    randomness = args[1]
 
     # reshape fen
     newboard = [[0 for x in range(9)] for y in range(10)]
@@ -27,7 +28,7 @@ def on_a_response(*args):
         opp = "r"
 
     # detect whether being checked
-    checkflag,tempmove = check(newboard, opp)
+    checkflag, tempmove = check(newboard, opp)
     if(checkflag == 1):
         string = ''
         for x in xrange(0,4):
@@ -36,7 +37,7 @@ def on_a_response(*args):
         f.write(string + "," + fen[tempmove[0]*10 + tempmove[1]] + "\n")
         return None, fen[100]
 
-    index = move_selection(fen, newboard)
+    index = move_selection(fen, newboard, randomness)
 
     string = ''
     for x in xrange(0,4):
@@ -61,7 +62,7 @@ def on_a_response(*args):
 # def minimax_search(chessboard, move, num, side):
 
 
-def chess_loop(times,filename):
+def chess_loop(times, filename, randomness):
     global f
     f=open("../source/" + filename,"a+")
     fen = "rnbakabnr/111111111/1c11111c1/p1p1p1p1p/111111111/111111111/P1P1P1P1P/1C11111C1/111111111/RNBAKABNR/r"
@@ -71,9 +72,9 @@ def chess_loop(times,filename):
         f.write("Game "+str(x)+"\n")
         for i in xrange(1,1000):
             if(i%2==1):
-                fen, win = on_a_response(fen)
+                fen, win = on_a_response(fen, randomness)
             else:
-                fen, win = game2p.on_a_response(fen)
+                fen, win = game2p.on_a_response(fen, randomness)
             # print win
             if(win == "r"):
                 f.write("r wins\n")
@@ -97,12 +98,20 @@ def chess_loop(times,filename):
 #     chess_loop(1000,sys.argv[1])
 
 if __name__ == '__main__':
-    
+
+    if (len(sys.argv) < 5):
+        print "Usage: [init_version: 001] [randomness: 0.0 ~ 1.0] [iterations: 100] [games_each_iter: 1000]"
+        exit(1)
+
     init_version = sys.argv[1]
+    randomness = float(sys.argv[2])
+    iterations = int(sys.argv[3])
+    games_each_iter = int(sys.argv[4])
+
     new_version = int(init_version) + 1
     fileindex = 0
-    while fileindex<100:
-        chess_loop(1000,str(fileindex)+".txt")
+    while fileindex < iterations:
+        chess_loop(games_each_iter, str(fileindex)+".txt", randomness)
         # if(fileindex%10 == 9):
         data_process.data_process(str(init_version),str(new_version),fileindex)
         init_version = new_version

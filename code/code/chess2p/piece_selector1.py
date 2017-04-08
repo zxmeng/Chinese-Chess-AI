@@ -68,7 +68,7 @@ class Fuck1:
         print self.sess
         with self.sess.as_default():       
             saver = tf.train.Saver()
-            saver.restore(self.sess, '../model/my-model-piece_selector-017')
+            saver.restore(self.sess, '../model/my-model-piece_selector-001')
         
     def close_piece_selector(self):
         self.sess.close()

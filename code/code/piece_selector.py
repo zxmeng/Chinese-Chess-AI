@@ -28,7 +28,7 @@ class Fuck:
         feature_layer_soft = 256
         feature_layer_final = 90
 
-        # tf.reset_default_graph()
+        tf.reset_default_graph()
         self.sess = tf.InteractiveSession()
         # tf.reset_default_graph()
         # print tf.get_default_session()
