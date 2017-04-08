@@ -22,9 +22,9 @@ def on_a_response(*args):
     if(checkflag == 1):
         string = ''
         for x in xrange(0,4):
-            print string
             string = string + str(tempmove[x])
         # f.write(string + "," + fen[tempmove[0]*10 + tempmove[1]] + "\n")
+        print "Last Move: " + string
         return None, fen[100]
 
     index = move_selection(fen,newboard)

@@ -178,6 +178,7 @@ def move_selection(fen, newboard, randomness):
 
     else:
         probs = np.zeros((4), dtype=np.float32)
+        i = 0
         while (i < 4):
 
             move[i][0], move[i][1] = get_max(prediction)

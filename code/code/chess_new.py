@@ -32,8 +32,8 @@ def on_a_response(*args):
     if(checkflag == 1):
         string = ''
         for x in xrange(0,4):
-            print string
             string = string + str(tempmove[x])
+        print "Last Move: " + string
         f.write(string + "," + fen[tempmove[0]*10 + tempmove[1]] + "\n")
         return None, fen[100]
 
@@ -67,9 +67,9 @@ def chess_loop(times, filename, randomness):
     f=open("../source/" + filename,"a+")
     fen = "rnbakabnr/111111111/1c11111c1/p1p1p1p1p/111111111/111111111/P1P1P1P1P/1C11111C1/111111111/RNBAKABNR/r"
 
-    for x in xrange(1,times+1):
-        print x
-        f.write("Game "+str(x)+"\n")
+    for x in xrange(1, times + 1):
+        print "Game " + str(x)
+        f.write("Game " + str(x) + "\n")
         for i in xrange(1,1000):
             if(i%2==1):
                 fen, win = on_a_response(fen, randomness)
@@ -79,12 +79,12 @@ def chess_loop(times, filename, randomness):
             if(win == "r"):
                 f.write("r wins\n")
                 # print "r"
-                print i
+                print "Moves: " + str(i)
                 break
             elif(win == "b"):
                 f.write("b wins\n")
                 # print "b"
-                print i
+                print "Moves: " + str(i)
                 break
             # print fen
             pass
