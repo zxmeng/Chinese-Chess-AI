@@ -25,9 +25,11 @@ piece_b = ['k', 'a', 'b', 'n', 'r', 'c', 'p']
 piece_r = ['K', 'A', 'B', 'N', 'R', 'C', 'P']
 piece_list = {'b': piece_b, 'r': piece_r}
 piece_list_op = {'b': piece_r, 'r': piece_b}
+piece_num = {'k': 4, 'a': 2, 'b': 2, 'n': 4, 'r': 5, 'c': 5, 'p': 2}
+piece_num1 = {'k': 4, 'a': 2, 'b': 2, 'n': 2, 'r': 3, 'c': 3, 'p': 1}
 
-
-precision = 18
+precision = 24
+precision1 = 10
 move = np.zeros((precision, 4), dtype=np.int)
 
 # # load NN models
@@ -150,7 +152,7 @@ def move_selection(fen, newboard, randomness):
 
             # print prediction_m
             process_move(prediction_m)
-            for j in range(3):
+            for j in range(piece_num[piece_type]):
                 if (i+j+1 >= precision):
                     break
 
@@ -286,7 +288,7 @@ def eval_minimax(fen, side, depth):
     process_piece(prediction, fen, fen[100])
 
     i = 0
-    while( i < precision):
+    while( i < precision1):
         
         move[i][0], move[i][1] = get_max(prediction)
         if prediction[move[i][0]][move[i][1]] == 0:
@@ -315,7 +317,7 @@ def eval_minimax(fen, side, depth):
 
         process_move(prediction_m)
         # process prediction
-        for j in range(4):
+        for j in range(piece_num1[piece_type]):
             if (i+j+1 >= precision):
                 break
             move[i+j][0] = move[i][0]
