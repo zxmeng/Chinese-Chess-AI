@@ -6,7 +6,7 @@ from common import *
 
 
 
-f=open("../qipu/" + sys.argv[1],"a+")
+f=open("../qipu/" + sys.argv[1],"w")
 
 def on_a_response(*args):
     # get fen
@@ -66,15 +66,15 @@ def on_a_response(*args):
 
 def chess_loop(times, filename, randomness):
     global f
-    f=open("../source/" + filename,"a+")
+    f = open("../source/" + filename, "w")
     fen = "rnbakabnr/111111111/1c11111c1/p1p1p1p1p/111111111/111111111/P1P1P1P1P/1C11111C1/111111111/RNBAKABNR/r"
-
+    max_moves = 100
     for x in xrange(1, times + 1):
         print "******************************************************************"
         print "Game " + str(x)
         f.write("Game " + str(x) + "\n")
-        for i in xrange(1, 250):
-            if(i%2==1):
+        for i in xrange(1, max_moves):
+            if (i%2 == 1):
                 fen, win = on_a_response(fen, randomness)
             else:
                 fen, win = game2p.on_a_response(fen, randomness)
@@ -90,6 +90,9 @@ def chess_loop(times, filename, randomness):
                 print "Moves: " + str(i)
                 break
             # print fen
+            if (i == max_moves - 1):
+            	f.write("b wins\n")
+            	print "Draw!"
             pass
         fen = "rnbakabnr/111111111/1c11111c1/p1p1p1p1p/111111111/111111111/P1P1P1P1P/1C11111C1/111111111/RNBAKABNR/r"
         pass

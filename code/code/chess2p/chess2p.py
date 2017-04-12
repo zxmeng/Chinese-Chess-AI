@@ -3,6 +3,7 @@ from common1 import *
 def on_a_response(*args):
     # get fen
     fen = args[0]
+    randomness = args[1]
 
     # reshape fen
     newboard = [[0 for x in range(9)] for y in range(10)]
@@ -27,7 +28,7 @@ def on_a_response(*args):
         print "Last Move: " + string
         return None, fen[100]
 
-    index = move_selection(fen,newboard)
+    index = move_selection(fen, newboard, randomness)
 
     string = ''
     for x in xrange(0,4):

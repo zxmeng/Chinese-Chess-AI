@@ -1,4 +1,5 @@
 import numpy as np
+import random
 # from socketIO_client import SocketIO
 import time
 from piece_selector1 import *
@@ -101,65 +102,106 @@ def flip(fen, x, y):
     return x, y
 
 
-def move_selection(fen, newboard):
+def move_selection(fen, newboard, randomness):
 
     prediction = fuck1.piece_selector_nn(fen)
-    process_piece(prediction,fen,fen[100])
+    process_piece(prediction, fen, fen[100])
     # print prediction
-    i = 0
-    while (i < precision):
+    rand = random.uniform(0,1)
+    if (rand < randomness):
+        i = 0
+        while (i < precision):
 
-        move[i][0], move[i][1] = get_max(prediction)
-        if prediction[move[i][0]][move[i][1]] == 0:
-            break
-        temp0 = move[i][0]
-        temp1 = move[i][1]
-        move[i][0], move[i][1] = flip(fen, move[i][0], move[i][1])
-
-        # move selector
-        output, piece_type = extract_features_dest(fen, [move[i][0], move[i][1]])
-        if piece_type == "a":
-            prediction_m = fuck1_a.move_selector_nn(output)
-        elif piece_type == "b":
-            prediction_m = fuck1_b.move_selector_nn(output)
-        elif piece_type == "c":
-            prediction_m = fuck1_c.move_selector_nn(output)
-        elif piece_type == "n":
-            prediction_m = fuck1_n.move_selector_nn(output)
-        elif piece_type == "k":
-            prediction_m = fuck1_k.move_selector_nn(output)
-        elif piece_type == "p":
-            prediction_m = fuck1_p.move_selector_nn(output)
-        elif piece_type == "r":
-            prediction_m = fuck1_r.move_selector_nn(output)
-        pass
-
-        # print prediction_m
-        process_move(prediction_m)
-        for j in range(4):
-            if (i+j+1 >= precision):
+            move[i][0], move[i][1] = get_max(prediction)
+            if prediction[move[i][0]][move[i][1]] == 0:
                 break
+            temp0 = move[i][0]
+            temp1 = move[i][1]
+            move[i][0], move[i][1] = flip(fen, move[i][0], move[i][1])
 
-            move[i+j][0] = move[i][0]
-            move[i+j][1] = move[i][1]
-            # process prediction
-            move[i+j][2], move[i+j][3] = get_max(prediction_m)
-            # print prediction_m[move[i+j][2]][move[i+j][3]]
-            if prediction_m[move[i+j][2]][move[i+j][3]] == 0:
-                j -= 1
-                break
-            temp2 = move[i+j][2]
-            temp3 = move[i+j][3]
-            move[i+j][2], move[i+j][3] = flip(fen, move[i+j][2], move[i+j][3])
+            # move selector
+            output, piece_type = extract_features_dest(fen, [move[i][0], move[i][1]])
+            if piece_type == "a":
+                prediction_m = fuck1_a.move_selector_nn(output)
+            elif piece_type == "b":
+                prediction_m = fuck1_b.move_selector_nn(output)
+            elif piece_type == "c":
+                prediction_m = fuck1_c.move_selector_nn(output)
+            elif piece_type == "n":
+                prediction_m = fuck1_n.move_selector_nn(output)
+            elif piece_type == "k":
+                prediction_m = fuck1_k.move_selector_nn(output)
+            elif piece_type == "p":
+                prediction_m = fuck1_p.move_selector_nn(output)
+            elif piece_type == "r":
+                prediction_m = fuck1_r.move_selector_nn(output)
+            pass
 
-            prediction_m[temp2][temp3] = 0.0
+            # print prediction_m
+            process_move(prediction_m)
+            for j in range(4):
+                if (i+j+1 >= precision):
+                    break
 
-        i = i + j
-        i = i + 1
+                move[i+j][0] = move[i][0]
+                move[i+j][1] = move[i][1]
+                # process prediction
+                move[i+j][2], move[i+j][3] = get_max(prediction_m)
+                # print prediction_m[move[i+j][2]][move[i+j][3]]
+                if prediction_m[move[i+j][2]][move[i+j][3]] == 0:
+                    j -= 1
+                    break
+                temp2 = move[i+j][2]
+                temp3 = move[i+j][3]
+                move[i+j][2], move[i+j][3] = flip(fen, move[i+j][2], move[i+j][3])
+
+                prediction_m[temp2][temp3] = 0.0
+
+            i = i + j
+            i = i + 1
+            # print "i = %d" % i
+            prediction[temp0][temp1] = 0.0
         # print "i = %d" % i
-        prediction[temp0][temp1] = 0.0
-    # print "i = %d" % i
-    index = eval_move(newboard, move[:i], i, fen[100])
+        index = eval_move(newboard, move[:i], i, fen[100])
+
+    else:
+        probs = np.zeros((4), dtype=np.float32)
+        i = 0
+        while (i < 4):
+
+            move[i][0], move[i][1] = get_max(prediction)
+            probs[i] = prediction[move[i][0]][move[i][1]]
+            temp0 = move[i][0]
+            temp1 = move[i][1]
+            move[i][0], move[i][1] = flip(fen, move[i][0], move[i][1])
+
+            # move selector
+            output, piece_type = extract_features_dest(fen, [move[i][0], move[i][1]])
+            if piece_type == "a":
+                prediction_m = fuck1_a.move_selector_nn(output)
+            elif piece_type == "b":
+                prediction_m = fuck1_b.move_selector_nn(output)
+            elif piece_type == "c":
+                prediction_m = fuck1_c.move_selector_nn(output)
+            elif piece_type == "n":
+                prediction_m = fuck1_n.move_selector_nn(output)
+            elif piece_type == "k":
+                prediction_m = fuck1_k.move_selector_nn(output)
+            elif piece_type == "p":
+                prediction_m = fuck1_p.move_selector_nn(output)
+            elif piece_type == "r":
+                prediction_m = fuck1_r.move_selector_nn(output)
+            pass
+
+            # print prediction_m
+            process_move(prediction_m)
+            move[i][2], move[i][3] = get_max(prediction_m)
+            probs[i] = probs[i] * prediction_m[move[i][2]][move[i][3]]
+            move[i][2], move[i][3] = flip(fen, move[i][2], move[i][3])
+
+            prediction[temp0][temp1] = 0.0
+            i = i + 1
+        index = probs.argmax()
 
     return index
 
@@ -183,13 +225,13 @@ def eval_move(board, move, size, side):
         newboard[int(string[2])][int(string[3])]=newboard[int(string[0])][int(string[1])]
         newboard[int(string[0])][int(string[1])]='1';
 
-        fen=""
+        fen = ""
         for i in xrange(0,10):
             for j in xrange(0,9):
                 fen += newboard[i][j]
             fen += "/"
         # fen += side
-        if side=='r':
+        if side == 'r':
             fen += "b"
         else:
             fen += 'r'
