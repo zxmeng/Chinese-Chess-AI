@@ -22,7 +22,7 @@ def bias_variable(shape, name):
 
 class Eval_model:
     def __init__(self):
-        input_layer = 123
+        input_layer = 213
         hidden_layer_1 = 256
         hidden_layer_2 = 512
         hidden_layer_3 = 256
@@ -71,7 +71,7 @@ class Eval_model:
     def evaluate(self,fen):
         output = information_eva.ext_info_eva_full(fen + ",0")
         output = output.split("\n")[0]
-        x_in = np.zeros((1, 123))
+        x_in = np.zeros((1, 213))
         x_in[0] = output[0:-2].split(',')
         with self.sess.as_default():
             prediction = self.y_out.eval(feed_dict={self.x: x_in})
@@ -80,7 +80,7 @@ class Eval_model:
     
 def train_eva_model():
     # NN config
-    input_layer = 123
+    input_layer = 213
     hidden_layer_1 = 256
     hidden_layer_2 = 512
     hidden_layer_3 = 256
@@ -133,7 +133,7 @@ def train_eva_model():
         pgn = open(path + filename, 'r')
 
         batch = 1000
-        x_in = np.zeros((batch/2, 123))
+        x_in = np.zeros((batch/2, 213))
         y_eva = np.zeros((batch/2, 1))
         count = 0
         for line in pgn:
@@ -168,7 +168,7 @@ def train_eva_model():
 
             if count != 0 and count%batch == batch - 1:
                 train_step.run(feed_dict = {x: x_in, y_: y_eva})
-                x_in = np.zeros((batch/2, 123))
+                x_in = np.zeros((batch/2, 213))
                 y_eva = np.zeros((batch/2, 1))
 
             count += 1

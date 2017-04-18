@@ -43,6 +43,15 @@ def fen_reader(fen):
     return chessboard, player, score
 
 
+def label_attack_defend(chessboard):
+    # positive for under defence, negative for under attack
+    newboard = np.zeros((10, 9), dtype=np.int8)
+    for r in range(10):
+        for c in range(9):
+            newboard[r][c] = count_defend(chessboard, 'r', [r, c]) - count_defend(chessboard, 'b', [r, c])
+    return np.reshape(newboard, 90)
+
+
 def ext_info_eva_full(fen):
     dic_count = {p: 0 for p in pieces }
 
@@ -109,6 +118,11 @@ def ext_info_eva_full(fen):
         for i in range(piece_total[ptype]):
             output += str(dic_mob[ptype][i])
             output += ','
+
+    atk_dfd_map = label_attack_defend(_chessboard)
+    for i in range(90):
+        output += str(atk_dfd_map[i])
+        output += ','
 
     output += '\n'
     output += _score
