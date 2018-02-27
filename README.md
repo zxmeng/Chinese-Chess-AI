@@ -12,21 +12,40 @@ if you want to use the evaluator from Eleeye
 set the path in the common.py
 
  check.py                  # test check or checkmate
+ 
  chess_new.py              # play chess with itself
+ 
  common.py  			   # common functions
+ 
  data_process.py           # process data for NN
- information.py            # extract information from pgn   
+ 
+ information.py            # extract information from pgn  
+ 
  information_eva.py        # extract data for Evaluation network
+ 
  information_ext.py        # extract data for Policy network 
+ 
  model_training_move.py    # train move selector
+ 
  model_training_piece.py   # train piece selector
+ 
  moveGeneration.py         # generate possible moves
+ 
  move_selector.py          # move selector
+ 
  piece_selector.py         # piece selector
+ 
  server_new.py             # server program
+ 
  train_eva_full.py         # train evaluation network
+ 
  trans.py           	   # process PGN 
+ 
  update_move.py            # RL for move selector
+ 
  update_piece.py           # RL for piece selector
+ 
  validation.py             # move validation
+ 
  chess2p\                  # 2p chess for RL
+ 
