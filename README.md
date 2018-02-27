@@ -2,6 +2,8 @@
 
 ## Intelligent Non-Player Character with Deep Learning
 
+This project is to use Machine Learning techniques, such as CNN, Supervised Learning and Reinforcement Learning, to build and train a Game AI for Chinese Chess. Training data were collected via internet. Tensorflow was used to build the neural network models and Aliyun was used for cloud service.
+
 1. run the server
 
     cd ./site/Sites
